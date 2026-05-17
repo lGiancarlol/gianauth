@@ -59,16 +59,39 @@ router.patch("/:id", authenticate, requireOwner, validate(schemas.updateProduct)
 // DELETE /api/products/:id
 router.delete("/:id", authenticate, requireOwner, async (req, res, next) => {
   try {
-    const id         = parseInt(req.params.id);
-    const product    = await prisma.product.findUnique({ where: { id } });
+    const id      = parseInt(req.params.id);
+    const product = await prisma.product.findUnique({ where: { id } });
     if (!product) return res.status(404).json({ error: "Producto no encontrado" });
 
     const activeKeys = await prisma.license.count({ where: { productId: id, isDeleted: false } });
-    if (activeKeys > 0) return res.status(409).json({ error: `No se puede eliminar: tiene ${activeKeys} keys activas` });
+    if (activeKeys > 0) {
+      await audit({ actorId: req.user.id, actorRole: req.user.role, action: "product:delete_blocked",
+        targetType: "product", targetId: id,
+        metadata: { name: product.name, slug: product.slug, activeKeys }, ip: req.ip });
+      return res.status(409).json({ error: `No se puede eliminar: tiene ${activeKeys} keys activas` });
+    }
 
-    await prisma.product.delete({ where: { id } });
+    // Hard-delete soft-deleted licenses (already logically removed) and batches
+    // to satisfy FK constraints before deleting the product
+    await prisma.$transaction([
+      prisma.license.deleteMany({ where: { productId: id, isDeleted: true } }),
+      prisma.batch.deleteMany({ where: { productId: id } }),
+      prisma.product.delete({ where: { id } }),
+    ]);
+
+    await audit({ actorId: req.user.id, actorRole: req.user.role, action: "product:deleted",
+      targetType: "product", targetId: id,
+      metadata: { name: product.name, slug: product.slug }, ip: req.ip });
+
+    eventBus.emit("product:deleted", { id, name: product.name, slug: product.slug });
+
     res.json({ message: "Producto eliminado" });
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === "P2003" || err.code === "P2014") {
+      return res.status(409).json({ error: "No se puede eliminar: el producto tiene datos asociados" });
+    }
+    next(err);
+  }
 });
 
 module.exports = router;
