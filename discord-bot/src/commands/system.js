@@ -1,6 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
 const { getHealth, getSystemErrors, getBackups } = require("../api");
 const { buildHealthEmbed, buildErrorsEmbed, buildBackupsEmbed, buildPaginationButtons } = require("../embeds");
+const { buildEmbed } = require("../utils/buildEmbed");
 const { makeLogger } = require("../logger");
 const { isOnCooldown, denyCooldown } = require("../permissions");
 
@@ -70,16 +71,15 @@ async function execute(interaction) {
 
   else if (sub === "sockets") {
     const h = await getHealth();
-    const embed = new EmbedBuilder()
-      .setTitle("Conexiones Socket.IO")
-      .setColor(0x6366f1)
-      .addFields(
+    const embed = buildEmbed({
+      type:   "system",
+      title:  "Conexiones Socket.IO",
+      fields: [
         { name: "Clientes conectados", value: String(h.socket?.connected ?? "—"), inline: true },
-        { name: "Estado backend",      value: h.status === "ok" ? "Operativo" : "Degradado", inline: true },
+        { name: "Estado backend",      value: h.status === "ok" ? "Operativo" : "Degradado",  inline: true },
         { name: "Uptime",              value: h.uptime ? `${Math.floor(h.uptime / 3600)}h ${Math.floor((h.uptime % 3600) / 60)}m` : "—", inline: true },
-      )
-      .setFooter({ text: "GianAuth" })
-      .setTimestamp();
+      ],
+    });
     await interaction.editReply({ embeds: [embed] });
   }
 }

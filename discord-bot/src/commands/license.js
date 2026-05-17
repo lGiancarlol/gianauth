@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { searchLicense, getGlobalStock } = require("../api");
 const { buildLicenseEmbed, buildStockEmbed } = require("../embeds");
+const { buildEmbed } = require("../utils/buildEmbed");
 const { makeLogger } = require("../logger");
 
 const log = makeLogger("cmd:license");
@@ -42,17 +43,14 @@ async function execute(interaction) {
     }
 
     // Multiple results — show list
-    const { EmbedBuilder } = require("discord.js");
-    const embed = new EmbedBuilder()
-      .setTitle(`Resultados para "${query}"`)
-      .setColor(0x6366f1)
-      .setDescription(
-        results.map((l) =>
-          `**#${l.id}**  \`${l.key.slice(0, 24)}...\`  [${l.status}]  ${l.reseller?.username || "—"}`
-        ).join("\n")
-      )
-      .setFooter({ text: `GianAuth  |  ${results.length} resultado${results.length !== 1 ? "s" : ""}` })
-      .setTimestamp();
+    const embed = buildEmbed({
+      type:        "neutral",
+      title:       `Resultados para "${query}"`,
+      description: results.map((l) =>
+        `**#${l.id}**  \`${l.key.slice(0, 24)}...\`  [${l.status}]  ${l.reseller?.username || "—"}`
+      ).join("\n"),
+      footerExtra: `${results.length} resultado${results.length !== 1 ? "s" : ""}`,
+    });
     await interaction.editReply({ embeds: [embed] });
   }
 
