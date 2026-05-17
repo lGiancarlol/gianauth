@@ -75,22 +75,22 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Productos</h1>
-          <p className="text-muted-foreground text-sm mt-1">{products.length} productos registrados</p>
+    <div className="space-y-4 page-content">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">Productos</h1>
+          <p className="page-subtitle">{products.length} productos registrados</p>
         </div>
         <button onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 whitespace-nowrap">
           <Plus className="w-4 h-4" /> Nuevo Producto
         </button>
       </div>
 
       {showCreate && (
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="card card-p">
           <h2 className="font-semibold mb-4">Crear Producto</h2>
-          <form onSubmit={handleCreate} className="flex gap-3 items-end">
+          <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3 sm:items-end">
             <div className="flex-1">
               <label className="text-sm text-muted-foreground block mb-1.5">Nombre</label>
               <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -103,14 +103,17 @@ export default function ProductsPage() {
                 className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="Ej: producto-pro" required />
             </div>
-            <button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">Crear</button>
-            <button type="button" onClick={() => setShowCreate(false)} className="bg-secondary hover:bg-accent text-foreground px-4 py-2 rounded-lg text-sm transition-colors">Cancelar</button>
+            <div className="flex gap-2">
+              <button type="submit" className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">Crear</button>
+              <button type="button" onClick={() => setShowCreate(false)} className="flex-1 sm:flex-none bg-secondary hover:bg-accent text-foreground px-4 py-2 rounded-lg text-sm transition-colors">Cancelar</button>
+            </div>
           </form>
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="card">
+        <div className="table-wrap">
+          <table className="table-base">
           <thead>
             <tr className="border-b border-border bg-secondary/30">
               <th className="text-left px-4 py-3 text-muted-foreground font-medium">Nombre</th>
@@ -155,11 +158,12 @@ export default function ProductsPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {editModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl p-6 w-full max-w-sm space-y-4">
+        <div className="modal-overlay modal-enter">
+          <div className="modal-box-sm space-y-4">
             <h2 className="font-semibold">Editar producto</h2>
             <div>
               <label className="text-sm text-muted-foreground block mb-1.5">Nombre</label>

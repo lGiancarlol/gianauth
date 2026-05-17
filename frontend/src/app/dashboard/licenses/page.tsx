@@ -374,14 +374,13 @@ export default function LicensesPage() {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{isReseller ? "Mis Keys" : "Licencias"}</h1>
-          <p className="text-muted-foreground text-sm mt-1">{total} {isReseller ? "keys entregadas" : "licencias"}</p>
+    <div className="space-y-4 page-content">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">{isReseller ? "Mis Keys" : "Licencias"}</h1>
+          <p className="page-subtitle">{total} {isReseller ? "keys entregadas" : "licencias"}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="action-row">
           {isReseller && (
             <>
               <button onClick={() => setViewMode("table")}
@@ -666,9 +665,9 @@ export default function LicensesPage() {
 
       {/* Vista TABLA */}
       {(!isReseller || viewMode === "table") && (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        <div className="card">
+          <div className="table-wrap">
+            <table className="table-base">
               <thead>
                 <tr className="border-b border-border bg-secondary/30">
                   {isReseller && <th className="px-3 py-3 w-8" />}
@@ -773,11 +772,11 @@ export default function LicensesPage() {
 
       {/* Modal: editar meta */}
       {metaModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md space-y-4">
+        <div className="modal-overlay modal-enter">
+          <div className="modal-box space-y-4">
             <div>
               <h2 className="font-semibold">Editar información</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 font-mono">{metaModal.key}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 font-mono truncate">{metaModal.key}</p>
             </div>
             <div>
               <label className="text-sm text-muted-foreground block mb-1.5">Alias del cliente</label>
@@ -813,10 +812,10 @@ export default function LicensesPage() {
         </div>
       )}
 
-      {/* Modal: confirmar borrado masivo (owner only) */}
+      {/* Modal: confirmar borrado masivo */}
       {bulkDeleteModal && user?.role === "owner" && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl p-6 w-full max-w-sm space-y-4">
+        <div className="modal-overlay modal-enter">
+          <div className="modal-box-sm space-y-4">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-destructive/10 shrink-0">
                 <Trash2 className="w-4 h-4 text-red-400" />
@@ -847,11 +846,11 @@ export default function LicensesPage() {
 
       {/* Modal: solicitar acción */}
       {requestModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md space-y-4">
+        <div className="modal-overlay modal-enter">
+          <div className="modal-box space-y-4">
             <div>
               <h2 className="font-semibold">Solicitar acción</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 font-mono">{requestModal.key}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 font-mono truncate">{requestModal.key}</p>
             </div>
             <div className="space-y-2">
               {REQUEST_TYPES.map(({ value, label, icon: Icon }) => (

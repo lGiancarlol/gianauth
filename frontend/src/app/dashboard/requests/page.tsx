@@ -104,11 +104,11 @@ export default function RequestsPage() {
   const pending = requests.filter((r) => r.status === "pending").length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Solicitudes</h1>
-          <p className="text-muted-foreground text-sm mt-1">
+    <div className="space-y-4 page-content">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">Solicitudes</h1>
+          <p className="page-subtitle">
             {pending > 0 ? (
               <span className="text-amber-400 font-medium">{pending} pendiente{pending !== 1 ? "s" : ""}</span>
             ) : (
@@ -116,11 +116,11 @@ export default function RequestsPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => load()} className="p-2 rounded-lg hover:bg-accent text-muted-foreground transition-colors" title="Actualizar">
+        <div className="action-row">
+          <button onClick={() => load()} className="icon-btn" title="Actualizar">
             <RefreshCw className="w-4 h-4" />
           </button>
-          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -148,11 +148,11 @@ export default function RequestsPage() {
           </div>
         ) : (
           requests.map((req) => (
-            <div key={req.id} className={`bg-card border rounded-xl p-5 transition-colors ${
-              req.status === "pending" ? "border-amber-500/30" : "border-border"
+            <div key={req.id} className={`card p-3 sm:p-5 transition-colors ${
+              req.status === "pending" ? "border-amber-500/30" : ""
             }`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0 space-y-3">
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className={`font-semibold text-sm ${TYPE_COLORS[req.type] || "text-foreground"}`}>
                       {TYPE_LABELS[req.type] || req.type}
@@ -163,25 +163,25 @@ export default function RequestsPage() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 text-sm">
+                    <div className="min-w-0">
                       <p className="text-xs text-muted-foreground mb-0.5">Revendedor</p>
-                      <p className="font-medium">{req.reseller.username}</p>
+                      <p className="font-medium truncate">{req.reseller.username}</p>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-muted-foreground mb-0.5">Key</p>
-                      <p className="font-mono text-xs truncate max-w-[140px]">
+                      <p className="font-mono text-xs truncate">
                         {req.license?.key ?? "[deleted]"}
-                        {req.licenseDeleted && <span className="ml-1.5 text-[10px] text-red-400 font-normal not-italic">(eliminada)</span>}
+                        {req.licenseDeleted && <span className="ml-1 text-[10px] text-red-400">(eliminada)</span>}
                       </p>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-muted-foreground mb-0.5">Producto</p>
-                      <p>{req.license?.product?.name ?? "—"} · {req.license?.duration ?? "—"}d</p>
+                      <p className="truncate">{req.license?.product?.name ?? "—"} · {req.license?.duration ?? "—"}d</p>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-muted-foreground mb-0.5">Usuario asignado</p>
-                      <p>{req.license?.assignedUser || "—"}</p>
+                      <p className="truncate">{req.license?.assignedUser || "—"}</p>
                     </div>
                   </div>
 
@@ -198,7 +198,7 @@ export default function RequestsPage() {
                 </div>
 
                 {/* Acciones */}
-                <div className="flex flex-col gap-2 shrink-0">
+                <div className="flex sm:flex-col gap-2 shrink-0 flex-wrap">
                   {req.status === "pending" && (
                     <>
                       <button
@@ -244,8 +244,8 @@ export default function RequestsPage() {
 
       {/* Modal resolución */}
       {noteModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md space-y-4">
+        <div className="modal-overlay modal-enter">
+          <div className="modal-box-sm space-y-4">
             <h2 className="font-semibold">
               {noteModal.action === "approved" && "Aprobar solicitud"}
               {noteModal.action === "rejected" && "Rechazar solicitud"}
