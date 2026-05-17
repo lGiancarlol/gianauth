@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  password      String
+  role          String   @default("reseller") // "owner" | "reseller"
+  isBlocked     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Límites por revendedor (null = sin límite)
+  maxClaimsDay  Int?
+  maxResetsDay  Int?
+
+  // Renovación / mensualidad (solo control administrativo)
+  renewalDate   DateTime?
+  renewalStatus String?   @default("active") // "active" | "pending" | "overdue"
+  renewalNote   String?
+
+  // Branding personalizado por revendedor
+  displayName   String?  // Nombre visible en el panel
+  panelName     String?  // Nombre del panel (ej: "Camilo Panel")
+  accentColor   String?  // Color hex (ej: "#6366f1")
+  avatarUrl     String?  // URL de avatar opcional
+
+  // Social links (owner only, readable by all authenticated users)
+  socialLinks      String?  // JSON: [{type, label, url}]
+
+  licenses        License[]
+  logs             Log[]
+  requests         Request[]
+  batches          Batch[]
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  tickets          SupportTicket[]  @relation("ResellerTickets")
+  ticketMessages   TicketMessage[]  @relation("MessageAuthor")
+  sessions         Session[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  licenses  License[]
+  batches   Batch[]
+}
+
+model License {
+  id           Int      @id @default(autoincrement())
+  key          String   @unique
+  duration     Int
+  status       String   @default("available")
+  createdAt    DateTime @default(now())
+  claimedAt    DateTime?
+  expiresAt    DateTime?
+  assignedUser String?
+  notes        String?
+  isDeleted    Boolean  @default(false)
+  deletedAt    DateTime?
+
+  // Estados privados del revendedor (NO afectan lógica real)
+  resellerPrivateStatus String?
+  clientAlias           String?
+  favorite              Boolean  @default(false)
+  lastPrivateUpdate     DateTime?
+
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id])
+
+  resellerId   Int?
+  reseller     User?    @relation(fields: [resellerId], references: [id])
+  requests     Request[]
+
+  @@index([resellerId])
+  @@index([productId])
+  @@index([status])
+  @@index([isDeleted])
+  @@index([expiresAt])
+  @@index([resellerId, status, isDeleted])
+}
+
+model Batch {
+  id         Int      @id @default(autoincrement())
+  duration   Int
+  quantity   Int
+  createdAt  DateTime @default(now())
+
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id])
+
+  resellerId Int
+  reseller   User     @relation(fields: [resellerId], references: [id], onDelete: Cascade)
+}
+
+model Request {
+  id               Int      @id @default(autoincrement())
+  type             String
+  status           String   @default("pending")
+  comment          String?
+  createdAt        DateTime @default(now())
+  resolvedAt       DateTime?
+  resolvedNote     String?
+  discordMessageId String?
+
+  // Snapshot of license data at creation time.
+  // Remains valid even if the license is later deleted or modified.
+  licenseSnapshot  String?  // JSON: { key, duration, status, productId, productName, productSlug, resellerId, resellerUsername, assignedUser }
+  licenseDeleted   Boolean  @default(false)
+
+  licenseId    Int?
+  license      License?  @relation(fields: [licenseId], references: [id], onDelete: SetNull)
+  resellerId   Int
+  reseller     User     @relation(fields: [resellerId], references: [id], onDelete: Cascade)
+
+  @@index([resellerId])
+  @@index([status])
+  @@index([licenseId])
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  action     String
+  targetType String?
+  targetId   Int?
+  metadata   String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  actorId    Int?
+  actorRole  String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([targetType, targetId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  type      String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model SupportTicket {
+  id         Int       @id @default(autoincrement())
+  subject    String
+  status     String    @default("open")     // open | in_progress | closed
+  priority   String    @default("medium")   // low | medium | high
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  resellerId Int
+  reseller   User      @relation("ResellerTickets", fields: [resellerId], references: [id], onDelete: Cascade)
+
+  messages   TicketMessage[]
+
+  @@index([resellerId])
+  @@index([status])
+  @@index([priority])
+}
+
+model TicketMessage {
+  id        Int      @id @default(autoincrement())
+  body      String
+  isOwner   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticketId  Int
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId  Int
+  author    User     @relation("MessageAuthor", fields: [authorId], references: [id])
+
+  @@index([ticketId])
+}
+
+model Session {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  ip         String?
+  userAgent  String?
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  isActive   Boolean  @default(true)
+
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([token])
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  action    String
+  detail    String
+  createdAt DateTime @default(now())
+
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model ErrorLog {
+  id         Int      @id @default(autoincrement())
+  severity   String   @default("error")   // error | warn | critical
+  message    String
+  stack      String?
+  endpoint   String?
+  method     String?
+  userId     Int?
+  username   String?
+  payload    String?  // JSON summary, truncated
+  ip         String?
+  resolved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([severity])
+  @@index([resolved])
+  @@index([createdAt])
+}
+
+model BackupRecord {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  sizeBytes Int
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

@@ -1,0 +1,61 @@
+version: "3.9"
+
+# Development compose — SQLite, no restart, debug logging
+# Usage: docker compose -f docker-compose.dev.yml up
+
+services:
+  backend:
+    build: ./backend
+    restart: "no"
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: file:./prisma/dev.db
+      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      LOG_LEVEL: debug
+    volumes:
+      - ./backend/prisma:/app/prisma
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api}
+    restart: "no"
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  bot:
+    build: ./discord-bot
+    restart: "no"
+    environment:
+      NODE_ENV: development
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CHANNEL_ID: ${DISCORD_CHANNEL_ID}
+      DISCORD_OWNER_ROLE_ID: ${DISCORD_OWNER_ROLE_ID:-}
+      API_URL: ${API_URL:-http://backend:4000/api}
+      OWNER_API_TOKEN: ${OWNER_API_TOKEN}
+      PANEL_URL: ${PANEL_URL:-http://localhost:3000/dashboard}
+      BOT_DB_PATH: /app/prisma/dev.db
+    volumes:
+      - ./backend/prisma:/app/prisma
+    depends_on:
+      backend:
+        condition: service_healthy
+    profiles:
+      - bot

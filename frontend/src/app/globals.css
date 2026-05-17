@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 6%;
+    --card-foreground: 213 31% 91%;
+    --primary: 210 100% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 210 100% 56%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/30; }
+
+  /* Smooth focus rings */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
+}
+
+@layer utilities {
+  /* Subtle page transitions */
+  .page-enter {
+    animation: page-in 0.18s ease-out;
+  }
+
+  @keyframes page-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Fade in */
+  .fade-in {
+    animation: fade-in 0.15s ease-out;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Scale in for modals */
+  .modal-enter {
+    animation: modal-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: scale(0.97) translateY(-4px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* Kbd hint */
+  kbd {
+    @apply inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono
+           text-muted-foreground border border-border bg-secondary/60;
+  }
+
+  /* Table row hover — subtle */
+  .table-row-hover:hover {
+    background: hsl(var(--secondary) / 0.4);
+  }
+
+  /* Accent-aware primary button */
+  .btn-accent {
+    background:   var(--accent-hex, hsl(var(--primary)));
+    color:        var(--accent-fg, hsl(var(--primary-foreground)));
+    border-color: var(--accent-border, transparent);
+  }
+  .btn-accent:hover {
+    background: color-mix(in srgb, var(--accent-hex, hsl(var(--primary))) 85%, black);
+  }
+
+  /* Accent-aware soft button */
+  .btn-accent-soft {
+    background:   var(--accent-soft, hsl(var(--primary) / 0.1));
+    color:        var(--accent-hex, hsl(var(--primary)));
+    border-color: var(--accent-border, hsl(var(--primary) / 0.2));
+  }
+  .btn-accent-soft:hover {
+    background: var(--accent-muted, hsl(var(--primary) / 0.15));
+  }
+
+  /* Shimmer skeleton */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--secondary)) 25%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--secondary)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+  }
+}
