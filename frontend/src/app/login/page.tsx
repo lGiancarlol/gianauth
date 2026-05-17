@@ -37,7 +37,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-10"
+      className="min-h-screen flex items-center justify-center px-3 py-6 sm:px-6 sm:py-10"
       style={{ background: "#090b10" }}
     >
       {/* Card principal */}
@@ -45,29 +45,30 @@ export default function LoginPage() {
         className="w-full flex flex-col md:flex-row overflow-hidden"
         style={{
           maxWidth: 1300,
-          borderRadius: 28,
+          borderRadius: "clamp(16px, 2vw, 28px)",
           border: "1px solid #1e2028",
           boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
         }}
       >
+
         {/* ── COLUMNA IZQUIERDA ── */}
         <div
-          className="relative flex flex-col items-center justify-center px-10 py-16 md:py-0"
+          className="relative flex flex-col items-center justify-center overflow-hidden
+                     px-6 py-10
+                     sm:px-10 sm:py-12
+                     md:py-0"
           style={{ background: "#090b10", flex: "0 0 46%" }}
         >
-          {/* SVG decorativo de fondo */}
+          {/* SVG decorativo — escala con la columna, overflow-hidden en padre */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none"
             xmlns="http://www.w3.org/2000/svg"
             preserveAspectRatio="xMidYMid slice"
           >
-            {/* Círculos concéntricos */}
             <circle cx="50%" cy="50%" r="180" fill="none" stroke="#c0392b" strokeWidth="1" opacity="0.07" />
             <circle cx="50%" cy="50%" r="280" fill="none" stroke="#c0392b" strokeWidth="1" opacity="0.05" />
             <circle cx="50%" cy="50%" r="380" fill="none" stroke="#c0392b" strokeWidth="1" opacity="0.03" />
-            {/* Glow rojo detrás del logo */}
             <circle cx="50%" cy="50%" r="100" fill="#c0392b" opacity="0.04" />
-            {/* Partículas */}
             {[
               [12,18],[88,25],[22,72],[75,15],[60,80],[35,90],[90,60],[8,50],
               [50,8],[70,45],[15,40],[82,78],[45,65],[28,30],[65,20],
@@ -84,38 +85,44 @@ export default function LoginPage() {
           </svg>
 
           {/* Contenido central */}
-          <div className="relative z-10 flex flex-col items-center text-center gap-5">
-            {/* Logo box */}
+          <div className="relative z-10 flex flex-col items-center text-center gap-4 md:gap-5">
+
+            {/* Logo box — más pequeño en mobile */}
             <div
-              className="flex items-center justify-center"
+              className="flex items-center justify-center shrink-0"
               style={{
-                width: 90,
-                height: 90,
-                borderRadius: 22,
+                width: "clamp(64px, 10vw, 90px)",
+                height: "clamp(64px, 10vw, 90px)",
+                borderRadius: "clamp(14px, 2vw, 22px)",
                 background: "#c0392b",
                 border: "1.5px solid #e74c3c",
                 boxShadow: "0 0 40px rgba(192,57,43,0.35)",
               }}
             >
-              <IconLock size={44} color="#fff" stroke={1.6} />
+              <IconLock
+                size={undefined}
+                className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11"
+                color="#fff"
+                stroke={1.6}
+              />
             </div>
 
             {/* Título */}
             <div>
               <h1
-                className="font-bold tracking-tight"
-                style={{ fontSize: 48, color: "#fff", lineHeight: 1.1 }}
+                className="font-bold tracking-tight text-4xl sm:text-5xl"
+                style={{ color: "#fff", lineHeight: 1.1 }}
               >
                 GianAuth
               </h1>
-              <p className="mt-1 text-sm" style={{ color: "#777" }}>
+              <p className="mt-1 text-xs sm:text-sm" style={{ color: "#777" }}>
                 License Management Platform
               </p>
             </div>
 
-            {/* Descripción */}
+            {/* Descripción — oculta en mobile muy pequeño */}
             <p
-              className="text-sm leading-relaxed max-w-xs"
+              className="hidden sm:block text-xs sm:text-sm leading-relaxed max-w-xs"
               style={{ color: "#555" }}
             >
               Gestiona licencias y revendedores desde un único panel seguro.
@@ -123,7 +130,7 @@ export default function LoginPage() {
 
             {/* Badge */}
             <div
-              className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-medium"
+              className="flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs font-medium"
               style={{
                 background: "rgba(192,57,43,0.08)",
                 border: "1px solid rgba(192,57,43,0.25)",
@@ -131,17 +138,21 @@ export default function LoginPage() {
               }}
             >
               <span
-                className="inline-block w-1.5 h-1.5 rounded-full"
+                className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
                 style={{ background: "#c0392b" }}
               />
-              Plataforma privada · Solo invitados
+              <span className="whitespace-nowrap">Plataforma privada · Solo invitados</span>
             </div>
           </div>
         </div>
 
         {/* ── COLUMNA DERECHA ── */}
         <div
-          className="flex flex-col justify-center px-8 md:px-14 py-14"
+          className="flex flex-col justify-center
+                     px-5 py-8
+                     sm:px-8 sm:py-10
+                     md:px-10 md:py-14
+                     lg:px-14"
           style={{
             flex: "0 0 54%",
             background: "#0d0f14",
@@ -149,38 +160,40 @@ export default function LoginPage() {
           }}
         >
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <div
-              className="rounded-full mb-5"
-              style={{ width: 6, height: 40, background: "#c0392b" }}
+              className="rounded-full mb-4 md:mb-5"
+              style={{ width: 6, height: 36, background: "#c0392b" }}
             />
             <h2
-              className="font-bold"
-              style={{ fontSize: 28, color: "#fff", lineHeight: 1.2 }}
+              className="font-bold text-2xl sm:text-3xl"
+              style={{ color: "#fff", lineHeight: 1.2 }}
             >
               Bienvenido de vuelta
             </h2>
-            <p className="mt-1.5 text-sm" style={{ color: "#666" }}>
+            <p className="mt-1.5 text-xs sm:text-sm" style={{ color: "#666" }}>
               Accede a tu panel de gestión
             </p>
           </div>
 
           {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+
             {/* Usuario */}
             <div>
               <label
-                className="block text-sm font-medium mb-2"
+                className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2"
                 style={{ color: "#888" }}
               >
                 Usuario
               </label>
               <div className="relative">
                 <span
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none"
                   style={{ color: "#555" }}
                 >
-                  <IconUser size={18} stroke={1.6} />
+                  <IconUser size={16} stroke={1.6} className="sm:hidden" />
+                  <IconUser size={18} stroke={1.6} className="hidden sm:block" />
                 </span>
                 <input
                   type="text"
@@ -188,9 +201,9 @@ export default function LoginPage() {
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                   placeholder="admin"
                   required
-                  className="w-full pl-11 pr-4 text-sm transition-all outline-none"
+                  className="w-full pl-9 sm:pl-11 pr-4 text-sm transition-all outline-none"
                   style={{
-                    height: 56,
+                    height: "clamp(46px, 6vw, 56px)",
                     borderRadius: 12,
                     background: "#13151c",
                     border: "1px solid #1e2028",
@@ -212,9 +225,9 @@ export default function LoginPage() {
 
             {/* Contraseña */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                 <label
-                  className="text-sm font-medium"
+                  className="text-xs sm:text-sm font-medium"
                   style={{ color: "#888" }}
                 >
                   Contraseña
@@ -231,10 +244,11 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <span
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
                   style={{ color: pwFocused ? "#c0392b" : "#555" }}
                 >
-                  <IconLock size={18} stroke={1.6} />
+                  <IconLock size={16} stroke={1.6} className="sm:hidden" />
+                  <IconLock size={18} stroke={1.6} className="hidden sm:block" />
                 </span>
                 <input
                   type="password"
@@ -242,9 +256,9 @@ export default function LoginPage() {
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-11 pr-4 text-sm transition-all outline-none"
+                  className="w-full pl-9 sm:pl-11 pr-4 text-sm transition-all outline-none"
                   style={{
-                    height: 56,
+                    height: "clamp(46px, 6vw, 56px)",
                     borderRadius: 12,
                     background: "#13151c",
                     border: "1px solid #1e2028",
@@ -267,7 +281,7 @@ export default function LoginPage() {
             </div>
 
             {/* Recordarme */}
-            <div className="flex items-center gap-2.5 pt-1">
+            <div className="flex items-center gap-2.5 pt-0.5">
               <input
                 type="checkbox"
                 id="remember"
@@ -276,7 +290,7 @@ export default function LoginPage() {
               />
               <label
                 htmlFor="remember"
-                className="text-sm cursor-pointer select-none"
+                className="text-xs sm:text-sm cursor-pointer select-none"
                 style={{ color: "#888" }}
               >
                 Recordar sesión
@@ -289,7 +303,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full flex items-center justify-center gap-2.5 font-bold text-sm transition-all disabled:opacity-50"
               style={{
-                height: 56,
+                height: "clamp(46px, 6vw, 56px)",
                 borderRadius: 12,
                 background: "#c0392b",
                 color: "#fff",
@@ -325,21 +339,19 @@ export default function LoginPage() {
           </form>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
+          <div className="flex items-center gap-3 my-5 sm:my-6">
             <div className="flex-1 h-px" style={{ background: "#1e2028" }} />
-            <span className="text-xs" style={{ color: "#555" }}>
-              o usa
-            </span>
+            <span className="text-xs" style={{ color: "#555" }}>o usa</span>
             <div className="flex-1 h-px" style={{ background: "#1e2028" }} />
           </div>
 
-          {/* Botones sociales */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Botones sociales — stack en mobile, grid en sm+ */}
+          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2.5 sm:gap-3">
             <button
               type="button"
               className="flex items-center justify-center gap-2.5 text-sm font-medium transition-colors"
               style={{
-                height: 52,
+                height: "clamp(44px, 5vw, 52px)",
                 borderRadius: 12,
                 background: "#13151c",
                 border: "1px solid #1e2028",
@@ -356,7 +368,7 @@ export default function LoginPage() {
               type="button"
               className="flex items-center justify-center gap-2.5 text-sm font-medium transition-colors"
               style={{
-                height: 52,
+                height: "clamp(44px, 5vw, 52px)",
                 borderRadius: 12,
                 background: "#13151c",
                 border: "1px solid #1e2028",
@@ -373,13 +385,13 @@ export default function LoginPage() {
 
           {/* Badge inferior */}
           <div
-            className="flex items-center gap-3 mt-6 px-4 py-3 rounded-xl"
+            className="flex items-center gap-3 mt-5 sm:mt-6 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl"
             style={{
               background: "#13151c",
               border: "1px solid #1e2028",
             }}
           >
-            <IconShieldLock size={18} color="#c0392b" stroke={1.6} className="shrink-0" />
+            <IconShieldLock size={16} color="#c0392b" stroke={1.6} className="shrink-0" />
             <span className="text-xs" style={{ color: "#666" }}>
               Plataforma protegida · Acceso solo por invitación
             </span>
