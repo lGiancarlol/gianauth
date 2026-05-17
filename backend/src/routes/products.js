@@ -63,25 +63,52 @@ router.delete("/:id", authenticate, requireOwner, async (req, res, next) => {
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product) return res.status(404).json({ error: "Producto no encontrado" });
 
-    const activeKeys = await prisma.license.count({ where: { productId: id, isDeleted: false } });
+    // Debug counts for production diagnosis
+    const [activeKeys, softDeletedKeys] = await Promise.all([
+      prisma.license.count({ where: { productId: id, isDeleted: false } }),
+      prisma.license.count({ where: { productId: id, isDeleted: true  } }),
+    ]);
+    console.log(`[product:delete] id=${id} activeKeys=${activeKeys} softDeletedKeys=${softDeletedKeys}`);
+
     if (activeKeys > 0) {
       await audit({ actorId: req.user.id, actorRole: req.user.role, action: "product:delete_blocked",
         targetType: "product", targetId: id,
-        metadata: { name: product.name, slug: product.slug, activeKeys }, ip: req.ip });
+        metadata: { name: product.name, slug: product.slug, activeKeys, softDeletedKeys }, ip: req.ip });
+      eventBus.emit("product:delete_blocked", { id, name: product.name, activeKeys });
       return res.status(409).json({ error: `No se puede eliminar: tiene ${activeKeys} keys activas` });
     }
 
-    // Hard-delete soft-deleted licenses (already logically removed) and batches
-    // to satisfy FK constraints before deleting the product
-    await prisma.$transaction([
-      prisma.license.deleteMany({ where: { productId: id, isDeleted: true } }),
-      prisma.batch.deleteMany({ where: { productId: id } }),
-      prisma.product.delete({ where: { id } }),
-    ]);
+    // Interactive transaction — sequential, each await completes before the next
+    // Step 1: null-out licenseId on Requests pointing to soft-deleted licenses of this product
+    // Step 2: hard-delete soft-deleted licenses
+    // Step 3: delete batches
+    // Step 4: delete product
+    await prisma.$transaction(async (tx) => {
+      // Collect IDs of soft-deleted licenses to manually clear Request FK
+      // (PostgreSQL evaluates FK constraints per-statement, not end-of-transaction)
+      const softLicenses = await tx.license.findMany({
+        where:  { productId: id, isDeleted: true },
+        select: { id: true },
+      });
+      const softIds = softLicenses.map((l) => l.id);
+
+      if (softIds.length > 0) {
+        // Null out Request.licenseId for these licenses before deleting them
+        await tx.request.updateMany({
+          where: { licenseId: { in: softIds } },
+          data:  { licenseId: null, licenseDeleted: true },
+        });
+        // Now safe to hard-delete the soft-deleted licenses
+        await tx.license.deleteMany({ where: { id: { in: softIds } } });
+      }
+
+      await tx.batch.deleteMany({ where: { productId: id } });
+      await tx.product.delete({ where: { id } });
+    });
 
     await audit({ actorId: req.user.id, actorRole: req.user.role, action: "product:deleted",
       targetType: "product", targetId: id,
-      metadata: { name: product.name, slug: product.slug }, ip: req.ip });
+      metadata: { name: product.name, slug: product.slug, softDeletedKeys }, ip: req.ip });
 
     eventBus.emit("product:deleted", { id, name: product.name, slug: product.slug });
 
