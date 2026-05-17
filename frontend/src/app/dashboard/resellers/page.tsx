@@ -170,22 +170,22 @@ export default function ResellersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Revendedores</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold">Revendedores</h1>
           <p className="text-muted-foreground text-sm mt-1">{resellers.length} revendedores registrados</p>
         </div>
         <button onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-          <UserPlus className="w-4 h-4" /> Nuevo Revendedor
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 whitespace-nowrap">
+          <UserPlus className="w-4 h-4" /> <span className="hidden xs:inline">Nuevo </span>Revendedor
         </button>
       </div>
 
       {showCreate && (
         <div className="bg-card border border-border rounded-xl p-5">
           <h2 className="font-semibold mb-4">Crear Revendedor</h2>
-          <form onSubmit={handleCreate} className="flex gap-3 items-end">
+          <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3 sm:items-end">
             <div className="flex-1">
               <label className="text-sm text-muted-foreground block mb-1.5">Usuario</label>
               <input type="text" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -198,8 +198,10 @@ export default function ResellersPage() {
                 className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="••••••••" required />
             </div>
-            <button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">Crear</button>
-            <button type="button" onClick={() => setShowCreate(false)} className="bg-secondary hover:bg-accent text-foreground px-4 py-2 rounded-lg text-sm transition-colors">Cancelar</button>
+            <div className="flex gap-2">
+              <button type="submit" className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">Crear</button>
+              <button type="button" onClick={() => setShowCreate(false)} className="flex-1 sm:flex-none bg-secondary hover:bg-accent text-foreground px-4 py-2 rounded-lg text-sm transition-colors">Cancelar</button>
+            </div>
           </form>
         </div>
       )}
@@ -212,41 +214,47 @@ export default function ResellersPage() {
         ) : (
           resellers.map((r) => (
             <div key={r.id} className="bg-card border border-border rounded-xl overflow-hidden">
-              <div className="flex items-center gap-4 px-5 py-4">
-                <button onClick={() => toggleExpand(r.id)} className="text-muted-foreground hover:text-foreground transition-colors">
-                  {expanded === r.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                </button>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{r.username}</span>
-                    {r.isBlocked && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border bg-red-400/10 text-red-400 border-red-400/20">Bloqueado</span>
-                    )}
-                    {(r.maxClaimsDay !== null || r.maxResetsDay !== null) && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border bg-blue-400/10 text-blue-400 border-blue-400/20">Límites activos</span>
-                    )}
-                    {r.renewalStatus && r.renewalStatus !== "active" && (
-                      <Badge value={r.renewalStatus} />
-                    )}
+              {/* Fila principal: flex-col mobile, flex-row sm+ */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 sm:px-5 py-4">
+
+                {/* Toggle + info */}
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <button onClick={() => toggleExpand(r.id)} className="text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5">
+                    {expanded === r.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="font-medium text-foreground truncate">{r.username}</span>
+                      {r.isBlocked && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border bg-red-400/10 text-red-400 border-red-400/20 whitespace-nowrap">Bloqueado</span>
+                      )}
+                      {(r.maxClaimsDay !== null || r.maxResetsDay !== null) && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border bg-blue-400/10 text-blue-400 border-blue-400/20 whitespace-nowrap">Límites</span>
+                      )}
+                      {r.renewalStatus && r.renewalStatus !== "active" && (
+                        <Badge value={r.renewalStatus} />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      Creado {new Date(r.createdAt).toLocaleDateString("es")}
+                      {r.renewalDate && (
+                        <span className="ml-1">
+                          · Renov: {new Date(r.renewalDate).toLocaleDateString("es")}
+                          {(() => { const d = daysUntil(r.renewalDate); return d !== null ? (
+                            <span className={`ml-1 ${d < 0 ? "text-red-400" : d <= 3 ? "text-amber-400" : ""}`}>
+                              ({d < 0 ? `venc. ${Math.abs(d)}d` : d === 0 ? "hoy" : `${d}d`})
+                            </span>
+                          ) : null; })()}
+                        </span>
+                      )}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Creado {new Date(r.createdAt).toLocaleDateString("es")}
-                    {r.renewalDate && (
-                      <span className="ml-2">
-                        · Renovación: {new Date(r.renewalDate).toLocaleDateString("es")}
-                        {(() => { const d = daysUntil(r.renewalDate); return d !== null ? (
-                          <span className={`ml-1 ${d < 0 ? "text-red-400" : d <= 3 ? "text-amber-400" : ""}`}>
-                            ({d < 0 ? `vencido hace ${Math.abs(d)}d` : d === 0 ? "hoy" : `${d}d`})
-                          </span>
-                        ) : null; })()}
-                      </span>
-                    )}
-                  </p>
                 </div>
-                <div className="hidden sm:flex items-center gap-6 text-sm">
+                {/* Stats sm+ */}
+                <div className="hidden sm:flex items-center gap-4 lg:gap-6 text-sm shrink-0">
                   <div className="text-center">
                     <p className="font-semibold text-emerald-600 dark:text-emerald-400">{r.availableKeys}</p>
-                    <p className="text-xs text-muted-foreground">Disponibles</p>
+                    <p className="text-xs text-muted-foreground">Disp.</p>
                   </div>
                   <div className="text-center">
                     <p className="font-semibold text-foreground">{r.usedKeys}</p>
@@ -257,18 +265,26 @@ export default function ResellersPage() {
                     <p className="text-xs text-muted-foreground">Total</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+
+                {/* Stats mobile inline */}
+                <div className="flex sm:hidden items-center gap-3 text-xs pl-7">
+                  <span className="text-emerald-400 font-medium">{r.availableKeys} disp.</span>
+                  <span className="text-muted-foreground">{r.usedKeys} usadas</span>
+                  <span className="text-muted-foreground">{r._count.licenses} total</span>
+                </div>
+                {/* Acciones: flex-wrap para evitar overflow */}
+                <div className="flex items-center flex-wrap gap-1 pl-7 sm:pl-0 shrink-0">
                   <button onClick={() => toggleExpand(r.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-medium transition-colors">
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0">
                     <Package className="w-3.5 h-3.5" /> Asignar
                   </button>
                   <button
                     onClick={() => { setBrandingModal(r); setBrandingForm({ displayName: r.displayName || "", panelName: r.panelName || "", accentColor: r.accentColor || "", avatarUrl: r.avatarUrl || "" }); }}
-                    className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Configurar branding">
+                    className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Branding">
                     <Palette className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => { setLimitsModal(r); setLimitsForm({ maxClaimsDay: r.maxClaimsDay?.toString() ?? "", maxResetsDay: r.maxResetsDay?.toString() ?? "" }); }}
-                    className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Configurar límites">
+                    className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Límites">
                     <Settings className="w-3.5 h-3.5" />
                   </button>
                   <button
@@ -285,7 +301,7 @@ export default function ResellersPage() {
                       r.renewalStatus === "pending" ? "text-amber-400" :
                       "text-muted-foreground hover:text-foreground"
                     }`}
-                    title="Gestión de renovación">
+                    title="Renovación">
                     <CalendarClock className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => toggleBlock(r.id)}
@@ -300,7 +316,7 @@ export default function ResellersPage() {
               </div>
 
               {expanded === r.id && (
-                <div className="border-t border-border bg-secondary/10 p-5 space-y-5">
+                <div className="border-t border-border bg-secondary/10 p-3 sm:p-5 space-y-5">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     {/* Stock actual */}
                     <div>
@@ -321,9 +337,9 @@ export default function ResellersPage() {
                               return acc;
                             }, {})
                           ).map(([k, item]: any) => (
-                            <div key={k} className="flex items-center justify-between bg-card border border-border rounded-lg px-3 py-2 text-xs">
-                              <span className="font-medium">{item.name} · {item.duration}d</span>
-                              <div className="flex items-center gap-3">
+                            <div key={k} className="flex flex-col xs:flex-row xs:items-center justify-between bg-card border border-border rounded-lg px-3 py-2 text-xs gap-1">
+                              <span className="font-medium truncate min-w-0">{item.name} · {item.duration}d</span>
+                              <div className="flex items-center gap-2 shrink-0">
                                 <span className="text-emerald-600 dark:text-emerald-400">{item.available} disp.</span>
                                 <span className="text-muted-foreground">{item.used} usadas</span>
                                 {item.blocked > 0 && <span className="text-red-500 dark:text-red-400">{item.blocked} bloq.</span>}

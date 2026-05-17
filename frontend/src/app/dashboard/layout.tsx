@@ -133,11 +133,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const greeting   = isReseller ? (user.displayName || user.username) : "";
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background overflow-x-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Topbar */}
-        <header className="h-14 border-b border-[var(--accent-border,hsl(var(--border)))] bg-card/50 backdrop-blur-sm flex items-center justify-between px-6 gap-4 shrink-0">
+        <header className="h-14 border-b border-[var(--accent-border,hsl(var(--border)))] bg-card/50 backdrop-blur-sm flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4 shrink-0">
           <span className="text-sm text-muted-foreground hidden sm:block truncate">
             {greeting}
           </span>
@@ -157,8 +157,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto">
-          <div className="p-6 max-w-7xl mx-auto page-enter">{children}</div>
+        <main className="flex-1 overflow-auto overflow-x-hidden">
+          <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto page-enter min-w-0">{children}</div>
         </main>
       </div>
 

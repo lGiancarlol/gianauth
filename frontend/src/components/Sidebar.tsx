@@ -18,6 +18,8 @@ import {
 
 const W_EXPANDED  = "w-60";
 const W_COLLAPSED = "w-[72px]";
+// En mobile siempre colapsado (72px), en desktop respeta preferencia
+const W_MOBILE    = "w-[52px] sm:w-[72px]";
 
 const ownerNav = [
   { href: "/dashboard",           label: "Dashboard",    icon: LayoutDashboard },
@@ -250,25 +252,29 @@ const SocialLinksBar = memo(function SocialLinksBar({ collapsed }: { collapsed: 
 
 function useSidebarState() {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined") return true;
     const saved = localStorage.getItem("sidebar_collapsed");
     if (saved !== null) return saved === "true";
-    // Auto-collapse on narrow viewports
     return window.innerWidth < 1280;
   });
 
-  // Persist on change
   useEffect(() => {
     localStorage.setItem("sidebar_collapsed", String(collapsed));
   }, [collapsed]);
 
-  // Auto-collapse when viewport shrinks below 1280px (only if not manually set recently)
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1279px)");
-    const handler = (e: MediaQueryListEvent) => {
-      // Only auto-collapse; never auto-expand (respect user's manual expand)
-      if (e.matches) setCollapsed(true);
-    };
+    const mq = window.matchMedia("(max-width: 767px)");
+    // Force collapse on mobile always
+    if (mq.matches) setCollapsed(true);
+    const handler = (e: MediaQueryListEvent) => { if (e.matches) setCollapsed(true); };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px) and (max-width: 1279px)");
+    if (mq.matches) setCollapsed(true);
+    const handler = (e: MediaQueryListEvent) => { if (e.matches) setCollapsed(true); };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
@@ -298,8 +304,8 @@ export default function Sidebar() {
   return (
     <aside className={cn(
       "relative min-h-screen bg-card border-r border-[var(--accent-border,hsl(var(--border)))] flex flex-col shrink-0",
-      "transition-[width] duration-250 ease-in-out",
-      collapsed ? W_COLLAPSED : W_EXPANDED,
+      "transition-[width] duration-200 ease-in-out",
+      collapsed ? W_MOBILE : W_EXPANDED,
     )}>
 
       {/* Toggle button — sits on the right edge */}
