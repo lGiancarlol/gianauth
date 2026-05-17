@@ -178,15 +178,26 @@ async function handleLiveRequestUpdate(requestId, status) {
     const productName      = rawProduct  ? rawProduct.replace(/`/g, "").trim()  || "-"         : "-";
     const duration         = rawDuration ? parseInt(rawDuration.replace(/`/g, "").replace(/[^0-9]/g, "")) || 0 : 0;
 
+    // Extract request type from the original embed title to restore ACTION_LABELS lookup
+    const rawAction = get("Accion");
+    const requestType = rawAction
+      ? Object.entries(require("./src/embeds").ACTION_LABELS).find(([, v]) => v === rawAction.replace(/`/g, "").trim())?.[0]
+      : undefined;
+
     log.info(`[live-update] extracted values for request #${requestId}`, {
-      resellerUsername, licenseKey, productName, duration, status,
+      resellerUsername, licenseKey, productName, duration, status, requestType,
     });
+
+    const title = requestType
+      ? require("./src/embeds").ACTION_LABELS[requestType]
+      : rawEmbed?.title || "Solicitud actualizada";
+    log.info("[live-update] safe title", { title });
 
     const reseller = { username: resellerUsername };
     const license  = { key: licenseKey, product: { name: productName }, duration, assignedUser: null };
 
     const updatedEmbed = buildResolvedEmbed(
-      { id: requestId, status, resolvedAt: new Date(), resolvedNote: null },
+      { id: requestId, type: requestType, status, resolvedAt: new Date(), resolvedNote: null },
       license, reseller, "Sistema",
     );
 

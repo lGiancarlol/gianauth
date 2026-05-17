@@ -23,6 +23,14 @@ const STATUS_LABELS = { pending: "Pendiente", approved: "Aprobada", rejected: "R
 
 const FOOTER = "GianAuth";
 
+// ── Safe title helper ─────────────────────────────────────────────────────────
+function safeTitle(value, fallback = "Solicitud actualizada") {
+  if (value === undefined || value === null) return fallback;
+  const parsed = String(value).trim();
+  if (!parsed.length) return fallback;
+  return parsed.slice(0, 256);
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtDate(d) {
   if (!d) return "—";
@@ -72,7 +80,7 @@ function buildRequestEmbed(request, license, reseller) {
 function buildResolvedEmbed(request, license, reseller, resolvedBy) {
   const label = ACTION_LABELS[request.type] || request.type;
   return new EmbedBuilder()
-    .setTitle(label)
+    .setTitle(safeTitle(label))
     .setDescription(`Solicitud **${STATUS_LABELS[request.status] || request.status}**.`)
     .setColor(STATUS_COLORS[request.status] || 0x6366f1)
     .addFields(
