@@ -122,7 +122,11 @@ async function sendRequestToChannel(data) {
     const embed   = buildRequestEmbed(data, lic, data.reseller);
     const buttons = buildPendingButtons(data.id);
     const msg     = await channel.send({ embeds: [embed], components: [buttons, buildOpenPanelButton()] });
-    await store.saveMapping(data.id, msg.id);
+    await store.saveMapping(data.id, msg.id, {
+      type:        data.type,
+      productName: lic.product?.name || null,
+      duration:    lic.duration      ?? null,
+    });
     log.info(`Request #${data.id} sent to channel`, { msgId: msg.id, env: ENV_LABEL });
     return msg.id;
   } catch (err) {
@@ -147,54 +151,23 @@ async function handleLiveRequestUpdate(requestId, status) {
       return;
     }
 
-    // ── Debug: log raw embed fields from the original message ────────────────
-    const rawEmbed  = msg.embeds[0];
-    const rawFields = rawEmbed?.fields || [];
-    log.info(`[live-update] raw embed fields for request #${requestId}`, {
-      embedTitle:  rawEmbed?.title,
-      embedColor:  rawEmbed?.color,
-      fieldCount:  rawFields.length,
-      fieldNames:  rawFields.map((f) => f.name),
-      fieldValues: rawFields.map((f) => ({ name: f.name, value: f.value, len: f.value?.length })),
+    // Use persisted metadata — never depend on embed fields as source of truth
+    const stored      = store.getMeta(requestId);
+    const requestType = stored.type        || "general";
+    const productName = stored.productName || "-";
+    const duration    = stored.duration    ?? 0;
+
+    log.info("[live-update] safe title", {
+      requestId, status, requestType, productName, duration,
     });
 
-    const get = (name) => {
-      const field = rawFields.find((f) => f.name === name);
-      if (!field) {
-        log.warn(`[live-update] field "${name}" not found in embed`, { requestId, availableFields: rawFields.map((f) => f.name) });
-        return null;
-      }
-      return field.value;
+    const reseller = { username: msg.embeds[0]?.fields?.find((f) => f.name === "Revendedor")?.value?.replace(/`/g, "").trim() || "[unknown]" };
+    const license  = {
+      key:          msg.embeds[0]?.fields?.find((f) => f.name === "Key")?.value?.replace(/```/g, "").trim() || "[deleted]",
+      product:      { name: productName },
+      duration,
+      assignedUser: null,
     };
-
-    // Extract and sanitize each value — log every step
-    const rawReseller = get("Revendedor");
-    const rawKey      = get("Key");
-    const rawProduct  = get("Producto");
-    const rawDuration = get("Duracion");
-
-    const resellerUsername = rawReseller ? rawReseller.replace(/`/g, "").trim() || "[unknown]" : "[unknown]";
-    const licenseKey       = rawKey      ? rawKey.replace(/```/g, "").trim()    || "[deleted]" : "[deleted]";
-    const productName      = rawProduct  ? rawProduct.replace(/`/g, "").trim()  || "-"         : "-";
-    const duration         = rawDuration ? parseInt(rawDuration.replace(/`/g, "").replace(/[^0-9]/g, "")) || 0 : 0;
-
-    // Extract request type from the original embed title to restore ACTION_LABELS lookup
-    const rawAction = get("Accion");
-    const requestType = rawAction
-      ? Object.entries(require("./src/embeds").ACTION_LABELS).find(([, v]) => v === rawAction.replace(/`/g, "").trim())?.[0]
-      : undefined;
-
-    log.info(`[live-update] extracted values for request #${requestId}`, {
-      resellerUsername, licenseKey, productName, duration, status, requestType,
-    });
-
-    const title = requestType
-      ? require("./src/embeds").ACTION_LABELS[requestType]
-      : rawEmbed?.title || "Solicitud actualizada";
-    log.info("[live-update] safe title", { title });
-
-    const reseller = { username: resellerUsername };
-    const license  = { key: licenseKey, product: { name: productName }, duration, assignedUser: null };
 
     const updatedEmbed = buildResolvedEmbed(
       { id: requestId, type: requestType, status, resolvedAt: new Date(), resolvedNote: null },
@@ -205,30 +178,6 @@ async function handleLiveRequestUpdate(requestId, status) {
       ? [buildApprovedButtons(requestId), buildOpenPanelButton()]
       : [buildOpenPanelButton()];
 
-    // ── Debug: log full edit payload before sending ──────────────────────────
-    const embedData = updatedEmbed.toJSON();
-    log.info(`[live-update] edit payload for request #${requestId}`, {
-      embedTitle:       embedData.title,
-      embedColor:       embedData.color,
-      embedDescription: embedData.description,
-      embedFieldCount:  embedData.fields?.length,
-      embedFields:      embedData.fields?.map((f) => ({ name: f.name, value: f.value, inline: f.inline, nameLen: f.name?.length, valueLen: f.value?.length })),
-      embedFooter:      embedData.footer?.text,
-      componentCount:   components.length,
-      components:       components.map((row) => row.toJSON()),
-    });
-
-    // ── Validate before edit ─────────────────────────────────────────────────
-    const invalidFields = (embedData.fields || []).filter(
-      (f) => !f.name || !f.value || f.name.length === 0 || f.value.length === 0
-    );
-    if (invalidFields.length) {
-      log.error(`[live-update] INVALID FIELDS detected — aborting edit for request #${requestId}`, {
-        invalidFields,
-      });
-      return;
-    }
-
     await msg.edit({ embeds: [updatedEmbed], components });
     log.info(`Live update: request #${requestId} -> ${status}`);
 
@@ -237,7 +186,6 @@ async function handleLiveRequestUpdate(requestId, status) {
     log.error(`Failed to live-update request #${requestId}`, {
       error:   err.message,
       code:    err.code,
-      status:  err.status,
       rawBody: err.rawError ?? err.response?.data ?? null,
       stack:   err.stack?.split("\n").slice(0, 4).join(" | "),
     });

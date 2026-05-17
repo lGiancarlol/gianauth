@@ -6,10 +6,19 @@ const { makeLogger } = require("./logger");
 
 const log = makeLogger("store");
 
-async function saveMapping(requestId, messageId) {
+// In-memory metadata store — holds type/productName/duration for live-updates.
+// Keyed by requestId (number). Cleared when mapping is cleared.
+const _meta = new Map();
+
+async function saveMapping(requestId, messageId, meta = {}) {
   try {
     await saveDiscordMessage(requestId, messageId);
-    log.info("Mapping saved", { requestId, messageId });
+    _meta.set(requestId, {
+      type:        meta.type        || null,
+      productName: meta.productName || null,
+      duration:    meta.duration    ?? null,
+    });
+    log.info("Mapping saved", { requestId, messageId, meta: _meta.get(requestId) });
   } catch (err) {
     log.error("Failed to save mapping", { requestId, error: err.message });
   }
@@ -25,9 +34,14 @@ async function getMapping(requestId) {
   }
 }
 
+function getMeta(requestId) {
+  return _meta.get(requestId) || { type: null, productName: null, duration: null };
+}
+
 async function clearMapping(requestId) {
   try {
     await clearDiscordMessage(requestId);
+    _meta.delete(requestId);
     log.info("Mapping cleared", { requestId });
   } catch (err) {
     log.error("Failed to clear mapping", { requestId, error: err.message });
@@ -39,4 +53,4 @@ function cleanupTerminalMappings() {
   log.info("Cleanup delegated to backend — no local action needed");
 }
 
-module.exports = { saveMapping, getMapping, clearMapping, cleanupTerminalMappings };
+module.exports = { saveMapping, getMapping, getMeta, clearMapping, cleanupTerminalMappings };
