@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { Loader2 } from "lucide-react";
@@ -13,11 +13,31 @@ import {
   IconShieldLock,
 } from "@tabler/icons-react";
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [form, setForm] = useState({ username: "", password: "" });
-  const [loading, setLoading] = useState(false);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+const DISCORD_OAUTH_URL = API_URL.replace("/api", "") + "/api/auth/discord";
+
+function LoginForm() {
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const [form, setForm]           = useState({ username: "", password: "" });
+  const [loading, setLoading]     = useState(false);
   const [pwFocused, setPwFocused] = useState(false);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+    const msgs: Record<string, string> = {
+      discord_denied: "Cancelaste la autorización con Discord.",
+      invalid_state:  "Sesión OAuth inválida. Intenta de nuevo.",
+      blocked:        "Tu cuenta está bloqueada.",
+      server:         "Error del servidor. Intenta más tarde.",
+    };
+    toast.error(msgs[error] || "Error al iniciar sesión con Discord.");
+  }, []);
+
+  function handleDiscordLogin() {
+    window.location.href = DISCORD_OAUTH_URL;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -349,20 +369,27 @@ export default function LoginPage() {
           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2.5 sm:gap-3">
             <button
               type="button"
-              className="flex items-center justify-center gap-2.5 text-sm font-medium transition-colors"
+              onClick={handleDiscordLogin}
+              className="flex items-center justify-center gap-2.5 text-sm font-medium transition-all active:scale-[0.98]"
               style={{
                 height: "clamp(44px, 5vw, 52px)",
                 borderRadius: 12,
-                background: "#13151c",
-                border: "1px solid #1e2028",
-                color: "#aaa",
+                background: "rgba(88,101,242,0.08)",
+                border: "1px solid rgba(88,101,242,0.25)",
+                color: "#8b9cf4",
                 cursor: "pointer",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#181b23")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#13151c")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(88,101,242,0.15)";
+                e.currentTarget.style.borderColor = "rgba(88,101,242,0.4)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(88,101,242,0.08)";
+                e.currentTarget.style.borderColor = "rgba(88,101,242,0.25)";
+              }}
             >
               <IconBrandDiscord size={20} color="#5865F2" stroke={1.6} />
-              Discord
+              Continuar con Discord
             </button>
             <button
               type="button"
@@ -399,5 +426,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#090b10" }}>
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

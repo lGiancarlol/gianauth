@@ -31,6 +31,10 @@ model User {
   accentColor   String?  // Color hex (ej: "#6366f1")
   avatarUrl     String?  // URL de avatar opcional
 
+  // Discord OAuth
+  discordId     String?  @unique
+  discordUser   String?  // Discord username#discriminator
+
   // Social links (owner only, readable by all authenticated users)
   socialLinks      String?  // JSON: [{type, label, url}]
 
