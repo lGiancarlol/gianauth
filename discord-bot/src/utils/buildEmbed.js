@@ -1,5 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { panelUrl } = require("../config");
+const { panelUrl }  = require("../config");
+const { safeTitle } = require("./safeTitle");
 
 // ── Color palette ─────────────────────────────────────────────────────────────
 const COLORS = {
@@ -45,7 +46,7 @@ function resolveColor(type) {
 function buildEmbed({ type, title, description, fields, imageUrl, requestId, footerExtra, timestamp } = {}) {
   const embed = new EmbedBuilder().setColor(resolveColor(type));
 
-  if (title)       embed.setTitle(String(title));
+  if (title)       embed.setTitle(safeTitle(title));
   if (description) embed.setDescription(String(description));
 
   if (Array.isArray(fields) && fields.length) {

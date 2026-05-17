@@ -1,5 +1,9 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { panelUrl } = require("./config");
+const { panelUrl }   = require("./config");
+const { safeTitle }  = require("./utils/safeTitle");
+const { makeLogger } = require("./logger");
+
+const log = makeLogger("embeds");
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const ACTION_LABELS = {
@@ -22,14 +26,6 @@ const STATUS_COLORS = { pending: 0xd97706, approved: 0x16a34a, rejected: 0xdc262
 const STATUS_LABELS = { pending: "Pendiente", approved: "Aprobada", rejected: "Rechazada", completed: "Completada" };
 
 const FOOTER = "GianAuth";
-
-// ── Safe title helper ─────────────────────────────────────────────────────────
-function safeTitle(value, fallback = "Solicitud actualizada") {
-  if (value === undefined || value === null) return fallback;
-  const parsed = String(value).trim();
-  if (!parsed.length) return fallback;
-  return parsed.slice(0, 256);
-}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtDate(d) {
@@ -58,8 +54,10 @@ function fmtBytes(b) {
 // ── Request embeds ────────────────────────────────────────────────────────────
 function buildRequestEmbed(request, license, reseller) {
   const label = ACTION_LABELS[request.type] || request.type;
+  const safeT = safeTitle(label, "Nueva solicitud");
+  log.info("[embed-title]", { rawTitle: label, safe: safeT });
   return new EmbedBuilder()
-    .setTitle(label)
+    .setTitle(safeT)
     .setDescription("Solicitud pendiente de revision.")
     .setColor(ACTION_COLORS[request.type] || 0x6366f1)
     .addFields(
@@ -79,8 +77,10 @@ function buildRequestEmbed(request, license, reseller) {
 
 function buildResolvedEmbed(request, license, reseller, resolvedBy) {
   const label = ACTION_LABELS[request.type] || request.type;
+  const safeT = safeTitle(label);
+  log.info("[embed-title]", { rawTitle: label, safe: safeT });
   return new EmbedBuilder()
-    .setTitle(safeTitle(label))
+    .setTitle(safeT)
     .setDescription(`Solicitud **${STATUS_LABELS[request.status] || request.status}**.`)
     .setColor(STATUS_COLORS[request.status] || 0x6366f1)
     .addFields(
@@ -123,9 +123,10 @@ function buildLicenseEmbed(license) {
 }
 
 function buildStockEmbed(stock, title) {
+  const safeT0 = safeTitle(title, "Stock global");
   if (!stock.length) {
     return new EmbedBuilder()
-      .setTitle(title || "Stock global")
+      .setTitle(safeT0)
       .setColor(0xdc2626)
       .setDescription("Sin stock disponible.")
       .setFooter({ text: FOOTER })
@@ -137,7 +138,7 @@ function buildStockEmbed(stock, title) {
   );
 
   return new EmbedBuilder()
-    .setTitle(title || "Stock global")
+    .setTitle(safeT0)
     .setColor(0x6366f1)
     .setDescription(lines.join("\n"))
     .setFooter({ text: `${FOOTER}  |  ${stock.length} producto${stock.length !== 1 ? "s" : ""}` })
@@ -146,8 +147,11 @@ function buildStockEmbed(stock, title) {
 
 // ── Reseller embeds ───────────────────────────────────────────────────────────
 function buildResellerEmbed(reseller) {
+  const rawT  = `Revendedor: ${reseller.displayName || reseller.username}`;
+  const safeT = safeTitle(rawT, "Revendedor");
+  log.info("[embed-title]", { rawTitle: rawT, safe: safeT });
   return new EmbedBuilder()
-    .setTitle(`Revendedor: ${reseller.displayName || reseller.username}`)
+    .setTitle(safeT)
     .setColor(reseller.isBlocked ? 0xdc2626 : 0x16a34a)
     .addFields(
       { name: "Usuario",     value: `\`${reseller.username}\``,                                                   inline: true },
