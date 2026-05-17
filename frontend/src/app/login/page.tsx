@@ -219,7 +219,7 @@ function LoginForm() {
                   type="text"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
-                  placeholder="admin"
+                  placeholder="Tu usuario"
                   required
                   className="w-full pl-9 sm:pl-11 pr-4 text-sm transition-all outline-none"
                   style={{
@@ -274,7 +274,7 @@ function LoginForm() {
                   type="password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  placeholder="••••••••"
+                  placeholder="Ingresa tu contraseña"
                   required
                   className="w-full pl-9 sm:pl-11 pr-4 text-sm transition-all outline-none"
                   style={{
