@@ -48,7 +48,15 @@ function LoginForm() {
       toast.success(`Bienvenido, ${data.user.username}`);
       router.push("/dashboard");
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "Error al iniciar sesión");
+      const status = err.response?.status;
+      const data   = err.response?.data;
+      if (status === 429) {
+        const secs = data?.retryAfter;
+        const wait = secs ? ` Espera ${Math.ceil(secs / 60)} minuto${Math.ceil(secs / 60) !== 1 ? "s" : ""}.` : " Espera unos minutos.";
+        toast.error(`Has realizado demasiados intentos.${wait}`);
+      } else {
+        toast.error(data?.error || data?.message || "Error al iniciar sesión");
+      }
     } finally {
       setLoading(false);
     }

@@ -128,27 +128,57 @@ app.use(helmet({
 
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 
-// Rate limits
-app.use(rateLimit({
+const IS_PROD = process.env.NODE_ENV === "production";
+
+// ── Rate limit helpers ────────────────────────────────────────────────────────
+function makeLimit(opts) {
+  // In development: allow 10× more requests so normal testing never hits limits
+  const max = IS_PROD ? opts.max : opts.max * 10;
+  return rateLimit({
+    windowMs:       opts.windowMs,
+    max,
+    standardHeaders: true,
+    legacyHeaders:   false,
+    skip: (req) => {
+      // Never rate-limit health checks, socket.io, or static assets
+      const p = req.path;
+      return p === "/api/health" || p.startsWith("/socket.io");
+    },
+    handler: (req, res) => {
+      const retryAfter = Math.ceil(opts.windowMs / 1000);
+      log.security.warn({ ip: req.ip, path: req.path, route: opts.route }, "Rate limit triggered");
+      res.status(429).json({
+        error:      "Rate limit exceeded",
+        message:    opts.message || "Demasiadas solicitudes. Intenta más tarde.",
+        retryAfter,
+        route:      opts.route || req.path,
+      });
+    },
+  });
+}
+
+// Global limit — applied to all /api/* routes
+app.use(makeLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === "production" ? 300 : 2000,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Demasiadas solicitudes. Intenta más tarde." },
-  handler: (req, res, next, options) => {
-    log.security.warn({ ip: req.ip, path: req.path }, "Rate limit triggered");
-    res.status(429).json(options.message);
-  },
+  max:      IS_PROD ? 200 : 2000,
+  route:    "global",
+  message:  "Demasiadas solicitudes. Intenta más tarde.",
 }));
 
-app.use("/api/auth/login", rateLimit({
+// Login — stricter, brute-force protection
+app.use("/api/auth/login", makeLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: { error: "Demasiados intentos de login. Intenta en 15 minutos." },
-  handler: (req, res, next, options) => {
-    log.security.warn({ ip: req.ip, body: { username: req.body?.username } }, "Login rate limit triggered");
-    res.status(429).json(options.message);
-  },
+  max:      30,
+  route:    "/auth/login",
+  message:  "Demasiados intentos de login. Intenta en 15 minutos.",
+}));
+
+// Discord OAuth callback
+app.use("/api/auth/discord", makeLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      50,
+  route:    "/auth/discord",
+  message:  "Demasiadas solicitudes OAuth. Intenta más tarde.",
 }));
 
 app.use(express.json({ limit: "1mb" }));
