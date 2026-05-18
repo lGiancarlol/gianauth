@@ -13,7 +13,7 @@ import {
 } from "@tabler/icons-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-const DISCORD_OAUTH_URL = API_URL.replace("/api", "") + "/api/auth/discord";
+const DISCORD_OAUTH_URL = "https://api.gianprojects.online/api/auth/discord";
 
 function LoginForm() {
   const router       = useRouter();
