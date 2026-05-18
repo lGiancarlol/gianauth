@@ -20,7 +20,7 @@ const config: Record<string, BadgeConfig> = {
   active:          { bg: "bg-emerald-500/8",   text: "text-emerald-400", border: "border-emerald-500/20", dot: "bg-emerald-400", label: "Activo"      },
   overdue:         { bg: "bg-red-500/8",       text: "text-red-400",     border: "border-red-500/20",     dot: "bg-red-400",     label: "Vencido"     },
   owner:           { bg: "bg-amber-500/8",     text: "text-amber-400",   border: "border-amber-500/20",   dot: "bg-amber-400",   label: "Owner"       },
-  reseller:        { bg: "bg-[#c0392b]/8",     text: "text-[#c0392b]",   border: "border-[#c0392b]/20",   dot: "bg-[#c0392b]",   label: "Revendedor"  },
+  reseller:        { bg: "",                  text: "",                 border: "",                      dot: "",               label: "Revendedor"  },
   open:            { bg: "bg-amber-500/8",     text: "text-amber-400",   border: "border-amber-500/20",   dot: "bg-amber-400",   label: "Abierto"     },
   in_progress:     { bg: "bg-slate-500/8",     text: "text-slate-400",   border: "border-slate-500/20",   dot: "bg-slate-400",   label: "En progreso" },
   closed:          { bg: "bg-secondary",       text: "text-muted-foreground", border: "border-border",    dot: "bg-muted-foreground", label: "Cerrado" },
@@ -44,6 +44,8 @@ interface BadgeProps {
 
 export default function Badge({ value, dot = true, className }: BadgeProps) {
   const c = config[value];
+  const isReseller = value === "reseller";
+
   if (!c) {
     return (
       <span className={cn(
@@ -55,6 +57,20 @@ export default function Badge({ value, dot = true, className }: BadgeProps) {
       </span>
     );
   }
+
+  if (isReseller) {
+    return (
+      <span className={cn(
+        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border",
+        className
+      )}
+        style={{ background: "var(--theme-soft)", color: "var(--theme-primary)", borderColor: "var(--theme-border)" }}>
+        {dot && <span className="status-dot" style={{ background: "var(--theme-primary)" }} />}
+        {c.label}
+      </span>
+    );
+  }
+
   return (
     <span className={cn(
       "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border",

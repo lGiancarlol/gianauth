@@ -26,9 +26,11 @@ export default function EmptyState({ icon: Icon, title, description, action, cla
       {action && (
         <button
           onClick={action.onClick}
-          className="mt-5 px-4 py-2 rounded-lg text-xs font-medium
-                     bg-[#c0392b]/10 text-[#c0392b] border border-[#c0392b]/20
-                     hover:bg-[#c0392b]/20 transition-all duration-150 active:scale-[0.98]"
+          className="mt-5 px-4 py-2 rounded-lg text-xs font-medium border
+                     transition-all duration-150 active:scale-[0.98]"
+          style={{ background: "var(--theme-soft)", color: "var(--theme-primary)", borderColor: "var(--theme-border)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--theme-muted)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--theme-soft)")}
         >
           {action.label}
         </button>

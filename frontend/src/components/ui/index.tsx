@@ -119,7 +119,7 @@ export function Btn({ children, variant = "primary", size = "md", className, ...
       className={cn(
         "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors shrink-0 whitespace-nowrap disabled:opacity-50",
         size === "sm" ? "px-3 py-1.5 text-xs min-h-[32px]" : "px-3 sm:px-4 py-2 text-sm min-h-[40px]",
-        variant === "primary" && "bg-primary hover:bg-primary/90 text-primary-foreground",
+        variant === "primary" && "btn-primary",
         variant === "secondary" && "bg-secondary hover:bg-accent text-foreground border border-border",
         variant === "ghost" && "hover:bg-accent text-muted-foreground hover:text-foreground",
         className

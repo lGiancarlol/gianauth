@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-6 h-6 animate-spin text-[#c0392b]" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--theme-primary)" }} />
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Topbar */}
-        <header className="h-14 border-b border-[var(--accent-border,hsl(var(--border)))] bg-card/50 backdrop-blur-sm flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4 shrink-0">
+        <header className="h-14 border-b bg-card/50 backdrop-blur-sm flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4 shrink-0" style={{ borderColor: "var(--theme-border)" }}>
           <span className="text-sm text-muted-foreground hidden sm:block truncate">
             {greeting}
           </span>

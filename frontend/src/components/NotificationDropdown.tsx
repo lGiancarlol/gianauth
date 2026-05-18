@@ -57,7 +57,8 @@ export default function NotificationDropdown() {
 
         {/* Unread badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#c0392b] text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] font-bold rounded-full flex items-center justify-center leading-none"
+            style={{ background: "var(--theme-primary)", color: "var(--theme-fg)" }}>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -111,7 +112,8 @@ export default function NotificationDropdown() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold">Notificaciones</span>
                 {unreadCount > 0 && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#c0392b]/15 text-[#c0392b] border border-[#c0392b]/20">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold border"
+                    style={{ background: "var(--theme-soft)", color: "var(--theme-primary)", borderColor: "var(--theme-border)" }}>
                     {unreadCount}
                   </span>
                 )}
@@ -154,7 +156,7 @@ export default function NotificationDropdown() {
                         "border-b border-border last:border-0",
                         "transition-colors duration-100",
                         "hover:bg-accent/40 active:bg-accent/60",
-                        !n.isRead && "bg-[#c0392b]/[0.04]"
+                        !n.isRead && "unread-row"
                       )}
                     >
                       {/* Icon */}
@@ -185,7 +187,8 @@ export default function NotificationDropdown() {
 
                       {/* Unread dot */}
                       {!n.isRead && (
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#c0392b] shrink-0" />
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ background: "var(--theme-primary)" }} />
                       )}
                     </button>
                   );

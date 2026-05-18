@@ -53,8 +53,8 @@
 
   /* Smooth focus rings */
   *:focus-visible {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--theme-glow, 0 0 0 3px rgba(192,57,43,0.18));
     border-radius: var(--radius);
   }
 }
@@ -71,7 +71,11 @@
            transition-colors duration-150;
   }
   .card-hover {
-    @apply hover:border-border/80 hover:bg-[var(--bg-card-hover)];
+    @apply hover:border-border/80;
+  }
+  .card-hover:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--theme-border);
   }
   .card-p {
     @apply p-3 sm:p-4 md:p-5;
@@ -94,14 +98,16 @@
   }
   .icon-btn {
     @apply p-1.5 rounded-md text-muted-foreground transition-all duration-150
-           hover:bg-accent hover:text-foreground active:scale-95
+           hover:text-foreground active:scale-95
            shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center;
   }
+  .icon-btn:hover { background: var(--theme-soft); }
   .icon-btn-danger {
     @apply p-1.5 rounded-md text-muted-foreground transition-all duration-150
-           hover:bg-destructive/10 hover:text-red-400 active:scale-95
+           hover:text-red-400 active:scale-95
            shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center;
   }
+  .icon-btn-danger:hover { background: rgba(192,57,43,0.10); }
 
   /* ── Responsive grids ───────────────────────────────────────────────────── */
   .grid-responsive-2 {
@@ -202,18 +208,27 @@
     @apply w-full bg-input border border-border rounded-lg px-3 py-2 text-sm
            text-foreground placeholder:text-muted-foreground
            transition-all duration-150
-           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
+           focus:outline-none focus:border-transparent
            disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .input-base:focus {
+    box-shadow: var(--theme-glow);
+    border-color: var(--theme-border);
   }
 
   /* Primary button */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg
-           bg-primary hover:bg-primary/90 active:bg-primary/80
-           text-primary-foreground text-sm px-4 py-2
+           text-sm px-4 py-2
            transition-all duration-150 active:scale-[0.98]
            disabled:opacity-50 disabled:cursor-not-allowed
            shrink-0 whitespace-nowrap;
+    background: var(--theme-primary);
+    color:      var(--theme-fg);
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.12);
+    box-shadow: 0 4px 16px rgba(var(--theme-rgb), 0.3);
   }
 
   /* Secondary button */
@@ -229,35 +244,31 @@
   /* Danger button */
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg
-           bg-destructive/90 hover:bg-destructive active:bg-destructive/80
            text-white text-sm px-4 py-2
            transition-all duration-150 active:scale-[0.98]
            disabled:opacity-50 disabled:cursor-not-allowed
            shrink-0 whitespace-nowrap;
+    background: rgba(192,57,43,0.9);
   }
+  .btn-danger:hover:not(:disabled) { background: #c0392b; }
 
   /* Accent-aware primary button */
   .btn-accent {
-    background:   var(--accent-hex, hsl(var(--primary)));
-    color:        var(--accent-fg, hsl(var(--primary-foreground)));
-    border-color: var(--accent-border, transparent);
+    background:   var(--theme-primary);
+    color:        var(--theme-fg);
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg
            text-sm px-4 py-2 transition-all duration-150 active:scale-[0.98]
            shrink-0 whitespace-nowrap;
   }
-  .btn-accent:hover {
-    background: color-mix(in srgb, var(--accent-hex, hsl(var(--primary))) 85%, black);
-  }
+  .btn-accent:hover { filter: brightness(1.1); }
 
   /* Accent-aware soft button */
   .btn-accent-soft {
-    background:   var(--accent-soft, hsl(var(--primary) / 0.1));
-    color:        var(--accent-hex, hsl(var(--primary)));
-    border-color: var(--accent-border, hsl(var(--primary) / 0.2));
+    background:   var(--theme-soft);
+    color:        var(--theme-primary);
+    border-color: var(--theme-border);
   }
-  .btn-accent-soft:hover {
-    background: var(--accent-muted, hsl(var(--primary) / 0.15));
-  }
+  .btn-accent-soft:hover { background: var(--theme-muted); }
 
   /* Shimmer skeleton */
   .skeleton-shimmer {
@@ -271,10 +282,20 @@
     animation: shimmer 1.6s ease-in-out infinite;
   }
 
+  /* focus-theme utility — apply to any focusable element */
+  .focus-theme:focus {
+    outline: none;
+    box-shadow: var(--theme-glow);
+    border-color: var(--theme-border) !important;
+  }
+
   @keyframes shimmer {
     from { background-position: 200% 0; }
     to   { background-position: -200% 0; }
   }
+
+  /* Unread notification row */
+  .unread-row { background: var(--theme-soft); }
 
   /* Status dot */
   .status-dot {

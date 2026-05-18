@@ -233,7 +233,8 @@ const SocialLinksBar = memo(function SocialLinksBar({ collapsed }: { collapsed: 
 
             <div className="flex gap-2 pt-1">
               <button onClick={save} disabled={saving}
-                className="flex-1 bg-[#c0392b] hover:bg-[#d34836] text-white py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50"
+                style={{ background: "var(--theme-primary)", color: "var(--theme-fg)" }}>
                 {saving ? "Guardando..." : "Guardar"}
               </button>
               <button onClick={() => setEditing(false)}
@@ -357,7 +358,7 @@ export default function Sidebar() {
                 style={active && hasAccent
                   ? { color: "var(--accent-hex)", background: "var(--accent-soft)" }
                   : active
-                  ? { color: "#c0392b", background: "rgba(192,57,43,0.08)" }
+                  ? { color: "var(--theme-primary)", background: "var(--theme-soft)" }
                   : undefined}
                 {...(!active && hasAccent && {
                   onMouseEnter: (e) => {
@@ -371,11 +372,15 @@ export default function Sidebar() {
                 })}
               >
                 <Icon
-                  className={cn("shrink-0", collapsed ? "w-5 h-5" : "w-4 h-4", active && !hasAccent && "text-[#c0392b]")}
-                  style={active && hasAccent ? { color: "var(--accent-hex)" } : undefined}
+                  className={cn("shrink-0", collapsed ? "w-5 h-5" : "w-4 h-4")}
+                  style={active
+                    ? { color: hasAccent ? "var(--accent-hex)" : "var(--theme-primary)" }
+                    : undefined}
                 />
                 {!collapsed && (
-                  <span className={cn(!active && "text-muted-foreground", active && !hasAccent && "text-[#c0392b]")}>
+                  <span style={active
+                    ? { color: hasAccent ? "var(--accent-hex)" : "var(--theme-primary)" }
+                    : undefined}>
                     {label}
                   </span>
                 )}

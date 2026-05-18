@@ -39,48 +39,71 @@ export function isAccentSafe(hex: string): boolean {
   return luminance(...rgb) > 0.04;
 }
 
+/** Default accent when no custom color is set. */
+const DEFAULT_ACCENT = "#c0392b";
+
 /**
- * Builds a set of CSS custom properties from a hex accent color.
- * Injects them into document.documentElement so every component
- * can reference var(--accent-*) without prop drilling.
+ * Builds the full theme CSS variable set from a hex accent color and injects
+ * it into :root. Every component reads var(--theme-*) — no prop drilling.
  *
  * Variables injected:
- *   --accent-hex        raw hex value
- *   --accent-rgb        "r g b" for use in rgba()
- *   --accent-soft       8% opacity background
- *   --accent-muted      12% opacity background
- *   --accent-hover      16% opacity background
- *   --accent-border     25% opacity border
- *   --accent-fg         foreground color (white or dark) for contrast
+ *   --theme-primary      raw hex
+ *   --theme-rgb          "r g b" for rgba() composition
+ *   --theme-soft         4% bg  (subtle tint)
+ *   --theme-muted        8% bg  (card hover, unread bg)
+ *   --theme-hover        14% bg (button/row hover)
+ *   --theme-border       22% border
+ *   --theme-glow         box-shadow glow string
+ *   --theme-fg           foreground on solid accent bg
+ *
+ * Legacy --accent-* aliases kept for backward compat with Sidebar.
  */
 export function applyAccentTheme(hex: string | null | undefined): void {
-  const root = document.documentElement;
-
-  if (!hex || !isAccentSafe(hex)) {
-    // Remove overrides — fall back to Tailwind primary
-    root.style.removeProperty("--accent-hex");
-    root.style.removeProperty("--accent-rgb");
-    root.style.removeProperty("--accent-soft");
-    root.style.removeProperty("--accent-muted");
-    root.style.removeProperty("--accent-hover");
-    root.style.removeProperty("--accent-border");
-    root.style.removeProperty("--accent-fg");
-    return;
-  }
-
-  const rgb = hexToRgb(hex);
-  if (!rgb) return;
+  const root   = document.documentElement;
+  const color  = (hex && isAccentSafe(hex)) ? hex : DEFAULT_ACCENT;
+  const rgb    = hexToRgb(color)!;
   const [r, g, b] = rgb;
-  const lum = luminance(r, g, b);
+  const lum    = luminance(r, g, b);
+  const fg     = lum > 0.4 ? "#0f172a" : "#ffffff";
 
-  root.style.setProperty("--accent-hex",    hex);
+  // Theme variables
+  root.style.setProperty("--theme-primary", color);
+  root.style.setProperty("--theme-rgb",     `${r},${g},${b}`);
+  root.style.setProperty("--theme-soft",    `rgba(${r},${g},${b},0.06)`);
+  root.style.setProperty("--theme-muted",   `rgba(${r},${g},${b},0.10)`);
+  root.style.setProperty("--theme-hover",   `rgba(${r},${g},${b},0.15)`);
+  root.style.setProperty("--theme-border",  `rgba(${r},${g},${b},0.28)`);
+  root.style.setProperty("--theme-glow",    `0 0 0 3px rgba(${r},${g},${b},0.18)`);
+  root.style.setProperty("--theme-fg",      fg);
+
+  // Legacy aliases (Sidebar uses these)
+  root.style.setProperty("--accent-hex",    color);
   root.style.setProperty("--accent-rgb",    `${r} ${g} ${b}`);
   root.style.setProperty("--accent-soft",   `rgba(${r},${g},${b},0.08)`);
   root.style.setProperty("--accent-muted",  `rgba(${r},${g},${b},0.12)`);
   root.style.setProperty("--accent-hover",  `rgba(${r},${g},${b},0.16)`);
   root.style.setProperty("--accent-border", `rgba(${r},${g},${b},0.25)`);
-  // Foreground: white on dark accents, near-black on light ones
-  root.style.setProperty("--accent-fg",     lum > 0.4 ? "#0f172a" : "#ffffff");
+  root.style.setProperty("--accent-fg",     fg);
+}
+
+/**
+ * Inline style helper — returns a style object using theme CSS vars.
+ * Use when Tailwind can't reference dynamic CSS vars directly.
+ *
+ * @example
+ * <button style={themeStyle("bg")}> → background: var(--theme-primary)
+ * <div style={themeStyle("border")}> → borderColor: var(--theme-border)
+ */
+export function themeStyle(type: "bg" | "border" | "text" | "glow" | "soft" | "muted" | "hover") {
+  switch (type) {
+    case "bg":     return { background:   "var(--theme-primary)",  color: "var(--theme-fg)" };
+    case "border": return { borderColor:  "var(--theme-border)" };
+    case "text":   return { color:        "var(--theme-primary)" };
+    case "glow":   return { boxShadow:    "var(--theme-glow)" };
+    case "soft":   return { background:   "var(--theme-soft)" };
+    case "muted":  return { background:   "var(--theme-muted)" };
+    case "hover":  return { background:   "var(--theme-hover)" };
+  }
 }
 
 /**
