@@ -233,7 +233,7 @@ const SocialLinksBar = memo(function SocialLinksBar({ collapsed }: { collapsed: 
 
             <div className="flex gap-2 pt-1">
               <button onClick={save} disabled={saving}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                className="flex-1 bg-[#c0392b] hover:bg-[#d34836] text-white py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
                 {saving ? "Guardando..." : "Guardar"}
               </button>
               <button onClick={() => setEditing(false)}
@@ -356,6 +356,8 @@ export default function Sidebar() {
                 )}
                 style={active && hasAccent
                   ? { color: "var(--accent-hex)", background: "var(--accent-soft)" }
+                  : active
+                  ? { color: "#c0392b", background: "rgba(192,57,43,0.08)" }
                   : undefined}
                 {...(!active && hasAccent && {
                   onMouseEnter: (e) => {
@@ -369,11 +371,11 @@ export default function Sidebar() {
                 })}
               >
                 <Icon
-                  className={cn("shrink-0", collapsed ? "w-5 h-5" : "w-4 h-4", active && !hasAccent && "text-primary")}
+                  className={cn("shrink-0", collapsed ? "w-5 h-5" : "w-4 h-4", active && !hasAccent && "text-[#c0392b]")}
                   style={active && hasAccent ? { color: "var(--accent-hex)" } : undefined}
                 />
                 {!collapsed && (
-                  <span className={cn(!active && "text-muted-foreground", active && !hasAccent && "text-primary")}>
+                  <span className={cn(!active && "text-muted-foreground", active && !hasAccent && "text-[#c0392b]")}>
                     {label}
                   </span>
                 )}

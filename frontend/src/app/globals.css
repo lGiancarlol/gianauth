@@ -5,36 +5,36 @@
 @layer base {
   :root {
     /* ── Core palette ── */
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 224 71% 6%;
-    --card-foreground: 213 31% 91%;
-    --primary: 210 100% 56%;
+    --background: 222 30% 4%;
+    --foreground: 220 15% 92%;
+    --card: 222 28% 6%;
+    --card-foreground: 220 15% 92%;
+    --primary: 4 63% 47%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 213 31% 91%;
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20% 55%;
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 210 100% 56%;
+    --secondary: 222 22% 10%;
+    --secondary-foreground: 220 15% 92%;
+    --muted: 222 22% 10%;
+    --muted-foreground: 220 12% 52%;
+    --accent: 222 20% 14%;
+    --accent-foreground: 220 15% 92%;
+    --destructive: 4 63% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 18% 14%;
+    --input: 222 20% 10%;
+    --ring: 4 63% 47%;
     --radius: 0.5rem;
 
     /* ── Design tokens ── */
-    --bg-elevated:      hsl(224 71% 8%);
-    --bg-card-hover:    hsl(224 71% 8%);
-    --border-soft:      hsl(216 34% 14%);
+    --bg-elevated:      #0d1017;
+    --bg-card-hover:    #131722;
+    --border-soft:      #1a1d26;
 
     /* Status colors */
-    --clr-green:        142 71% 45%;
-    --clr-amber:        38 92% 50%;
-    --clr-red:          0 72% 51%;
-    --clr-blue:         210 100% 56%;
-    --clr-purple:       262 83% 58%;
+    --clr-green:        158 64% 35%;
+    --clr-amber:        40 80% 45%;
+    --clr-red:          4 63% 47%;
+    --clr-blue:         220 60% 55%;
+    --clr-purple:       262 60% 55%;
   }
 }
 
@@ -43,10 +43,13 @@
   body { @apply bg-background text-foreground; }
 
   /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { @apply bg-transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/30; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1e2230; border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2a2f40; }
+
+  /* Selection */
+  ::selection { background: rgba(192,57,43,0.25); color: #fff; }
 
   /* Smooth focus rings */
   *:focus-visible {
@@ -191,7 +194,7 @@
 
   /* Table row hover */
   .table-row-hover:hover {
-    background: hsl(var(--secondary) / 0.4);
+    background: #10131a;
   }
 
   /* Input base */

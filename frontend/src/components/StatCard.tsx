@@ -10,7 +10,7 @@ interface StatCardProps {
 }
 
 const variants = {
-  default: { icon: "text-primary bg-primary/10 border-primary/20",       value: "text-foreground"    },
+  default: { icon: "text-[#c0392b] bg-[#c0392b]/10 border-[#c0392b]/20", value: "text-foreground"    },
   success: { icon: "text-emerald-400 bg-emerald-500/8 border-emerald-500/20", value: "text-emerald-400" },
   warning: { icon: "text-amber-400 bg-amber-500/8 border-amber-500/20",   value: "text-foreground"    },
   danger:  { icon: "text-red-400 bg-red-500/8 border-red-500/20",         value: "text-red-400"       },
