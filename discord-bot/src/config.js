@@ -14,6 +14,7 @@ const config = {
   clientId:      process.env.DISCORD_CLIENT_ID,
   channelId:     process.env.DISCORD_CHANNEL_ID,
   ownerRoleId:   process.env.DISCORD_OWNER_ROLE_ID || null,
+  ownerUserId:   process.env.OWNER_USER_ID         || "446349128650326021",
   panelUrl:      getPanelUrl(),
   apiUrl:        process.env.API_URL        || "http://localhost:4000/api",
   ownerApiToken: process.env.OWNER_API_TOKEN || null,

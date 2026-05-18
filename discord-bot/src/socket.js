@@ -7,6 +7,10 @@ const log = makeLogger("socket");
 let socket         = null;
 let onRequestNew     = null;
 let onRequestUpdated = null;
+let _client          = null;   // set via setClient()
+
+// ── Client ref (para DMs) ─────────────────────────────────────────────────────
+function setClient(c) { _client = c; }
 
 // Idempotency — ignore duplicate events
 const seenEvents = new Set();
@@ -46,6 +50,15 @@ function connect(token) {
 
   socket.on("reconnect", (attempt) => {
     log.info("Socket reconnected", { attempt });
+    if (_client) {
+      const { notifyOwnerDM } = require("./utils/dmNotify");
+      notifyOwnerDM(_client, {
+        type:     "info",
+        title:    "Socket reconectado",
+        body:     `Reconexión exitosa al backend (intento ${attempt}).`,
+        panelBtn: false,
+      });
+    }
   });
 
   socket.on("request:new", (data) => {
@@ -81,4 +94,4 @@ function disconnect() {
   socket = null;
 }
 
-module.exports = { connect, onNew, onUpdate, disconnect };
+module.exports = { connect, onNew, onUpdate, disconnect, setClient };

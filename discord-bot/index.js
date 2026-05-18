@@ -54,6 +54,7 @@ const {
   buildRequestEmbed, buildPendingButtons, buildOpenPanelButton,
   buildResolvedEmbed, buildApprovedButtons,
 } = require("./src/embeds");
+const { notifyOwnerDM } = require("./src/utils/dmNotify");
 
 const log = makeLogger("bot");
 
@@ -121,13 +122,26 @@ async function sendRequestToChannel(data) {
     }
     const embed   = buildRequestEmbed(data, lic, data.reseller);
     const buttons = buildPendingButtons(data.id);
-    const msg     = await channel.send({ embeds: [embed], components: [buttons, buildOpenPanelButton()] });
+
+    // Mention owner only on new requests (critical event)
+    const mention = `<@${config.ownerUserId}>`;
+    const msg     = await channel.send({ content: mention, embeds: [embed], components: [buttons, buildOpenPanelButton()] });
     await store.saveMapping(data.id, msg.id, {
       type:        data.type,
       productName: lic.product?.name || null,
       duration:    lic.duration      ?? null,
     });
     log.info(`Request #${data.id} sent to channel`, { msgId: msg.id, env: ENV_LABEL });
+
+    // DM al owner
+    const { ACTION_LABELS } = require("./src/embeds");
+    const label = ACTION_LABELS[data.type] || data.type;
+    notifyOwnerDM(client, {
+      type:  "new",
+      title: "Nueva solicitud recibida",
+      body:  `**Revendedor:** ${data.reseller?.username || "—"}\n**Producto:** ${lic.product?.name || "—"}\n**Tipo:** ${label}\n**Solicitud:** #${data.id}`,
+    });
+
     return msg.id;
   } catch (err) {
     log.error(`Failed to send request #${data.id} to channel`, { error: err.message });
@@ -181,7 +195,16 @@ async function handleLiveRequestUpdate(requestId, status) {
     await msg.edit({ embeds: [updatedEmbed], components });
     log.info(`Live update: request #${requestId} -> ${status}`);
 
-    if (status === "completed" || status === "rejected") await store.clearMapping(requestId);
+    // DM al owner en completadas y rechazadas
+    if (status === "completed" || status === "rejected") {
+      const { STATUS_LABELS } = require("./src/embeds");
+      notifyOwnerDM(client, {
+        type:  status === "completed" ? "completed" : "rejected",
+        title: `Solicitud ${STATUS_LABELS[status]?.toLowerCase() || status}`,
+        body:  `**Solicitud:** #${requestId}\n**Estado:** ${STATUS_LABELS[status] || status}`,
+      });
+      await store.clearMapping(requestId);
+    }
   } catch (err) {
     log.error(`Failed to live-update request #${requestId}`, {
       error:   err.message,
@@ -207,6 +230,7 @@ client.once(Events.ClientReady, async (c) => {
   const token = await bootstrapToken();
   botSocket.onNew(sendRequestToChannel);
   botSocket.onUpdate(handleLiveRequestUpdate);
+  botSocket.setClient(client);
   botSocket.connect(token);
 });
 
@@ -256,13 +280,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 // -- Client events ------------------------------------------------------------
-client.on("error",             (err) => log.error("Client error",     { error: err.message }));
+client.on("error", (err) => {
+  log.error("Client error", { error: err.message });
+  notifyOwnerDM(client, {
+    type:  "error",
+    title: "Error crítico del bot",
+    body:  `\`${err.message.slice(0, 200)}\``,
+  });
+});
 client.on("warn",              (msg) => log.warn("Client warning",    { msg }));
 client.on("shardDisconnect",   (_, id) => log.warn(`Shard ${id} disconnected`));
 client.on("shardReconnecting", (id)   => log.info(`Shard ${id} reconnecting`));
 
 client.on("invalidated", () => {
   log.error("Session invalidated - exiting for restart");
+  notifyOwnerDM(client, {
+    type:     "error",
+    title:    "Sesión invalidada",
+    body:     "El bot fue desconectado por Discord. Reiniciando...",
+    panelBtn: false,
+  });
   setTimeout(() => process.exit(1), 5000);
 });
 
