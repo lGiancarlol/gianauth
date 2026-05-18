@@ -2,26 +2,37 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("
 const { panelUrl }  = require("../config");
 const { safeTitle } = require("./safeTitle");
 
-// ── Color palette ─────────────────────────────────────────────────────────────
+// ── Paleta premium ────────────────────────────────────────────────────────────
+// Oscura, elegante, coherente con el panel GianAuth.
 const COLORS = {
-  // Status
-  approved:  0x22c55e,
-  completed: 0x22c55e,
-  rejected:  0xef4444,
-  blocked:   0xef4444,
-  pending:   0xf59e0b,
-  waiting:   0xf59e0b,
-  info:      0x3b82f6,
-  general:   0x3b82f6,
-  neutral:   0x3b82f6,
-  warning:   0xf97316,
-  alert:     0xf97316,
-  system:    0x7c3aed,
-  health:    0x7c3aed,
-  critical:  0x991b1b,
-  error:     0x991b1b,
-  // Fallback
-  default:   0x6366f1,
+  // Acciones / estados
+  approved:  0x1f8f5f,   // verde oscuro premium
+  completed: 0x1f8f5f,
+  unban:     0x1f8f5f,
+  available: 0x1f8f5f,
+
+  rejected:  0xc0392b,   // rojo oscuro premium
+  blocked:   0xc0392b,
+  ban:       0xc0392b,
+  delete:    0xc0392b,
+  danger:    0xc0392b,
+  error:     0xc0392b,
+  critical:  0xc0392b,
+
+  pending:   0xd4a017,   // ámbar elegante
+  waiting:   0xd4a017,
+  warning:   0xd4a017,
+  extend:    0xd4a017,
+  renewal:   0xd4a017,
+
+  reset_hwid: 0x7b8cde,  // azul apagado — acción neutral
+  info:       0x7b8cde,
+  neutral:    0x7b8cde,
+  system:     0x7b8cde,
+  health:     0x7b8cde,
+  general:    0x7b8cde,
+
+  default:   0xc0392b,   // fallback = rojo premium
 };
 
 function resolveColor(type) {
@@ -29,51 +40,45 @@ function resolveColor(type) {
   return COLORS[String(type).toLowerCase()] ?? COLORS.default;
 }
 
+// ── Helper principal ──────────────────────────────────────────────────────────
+
 /**
- * Build a visually consistent embed.
+ * Construye un embed premium consistente.
  *
- * @param {object} data
- * @param {string}  [data.type]        - Color key (see COLORS map above)
- * @param {string}  [data.title]       - Embed title
- * @param {string}  [data.description] - Embed description
- * @param {Array}   [data.fields]      - Array of { name, value, inline? }
- * @param {string}  [data.imageUrl]    - Optional thumbnail image URL
- * @param {number}  [data.requestId]   - If set, footer shows "Solicitud #N"
- * @param {string}  [data.footerExtra] - Extra text appended to footer
- * @param {Date}    [data.timestamp]   - Custom timestamp (defaults to now)
+ * @param {object}  opts
+ * @param {string}  [opts.type]        - Clave de color (ver COLORS)
+ * @param {string}  [opts.title]       - Título del embed
+ * @param {string}  [opts.description] - Descripción
+ * @param {Array}   [opts.fields]      - [{ name, value, inline? }]
+ * @param {string}  [opts.footer]      - Texto extra en footer (se añade tras "GianAuth")
+ * @param {Date}    [opts.timestamp]   - Timestamp personalizado (default: ahora)
+ * @param {string}  [opts.thumbnail]   - URL de thumbnail
  * @returns {EmbedBuilder}
  */
-function buildEmbed({ type, title, description, fields, imageUrl, requestId, footerExtra, timestamp } = {}) {
+function buildEmbed({ type, title, description, fields, footer, timestamp, thumbnail } = {}) {
   const embed = new EmbedBuilder().setColor(resolveColor(type));
 
-  if (title)       embed.setTitle(safeTitle(title));
+  if (title)       embed.setTitle(safeTitle(String(title)));
   if (description) embed.setDescription(String(description));
+  if (thumbnail)   { try { embed.setThumbnail(String(thumbnail)); } catch {} }
 
   if (Array.isArray(fields) && fields.length) {
     const safe = fields
-      .filter((f) => f && f.name && f.value !== undefined && f.value !== null)
-      .map((f) => ({ name: String(f.name), value: String(f.value), inline: Boolean(f.inline) }));
+      .filter((f) => f?.name && f.value != null)
+      .map((f)   => ({ name: String(f.name), value: String(f.value), inline: Boolean(f.inline) }));
     if (safe.length) embed.addFields(safe);
   }
 
-  if (imageUrl) {
-    try { embed.setThumbnail(String(imageUrl)); } catch {}
-  }
-
   const footerParts = ["GianAuth"];
-  if (requestId != null) footerParts.push(`Solicitud #${requestId}`);
-  if (footerExtra)       footerParts.push(String(footerExtra));
+  if (footer) footerParts.push(String(footer));
   embed.setFooter({ text: footerParts.join("  ·  ") });
-
   embed.setTimestamp(timestamp instanceof Date ? timestamp : new Date());
 
   return embed;
 }
 
-/**
- * Build an "Abrir panel" Link button row.
- * @returns {ActionRowBuilder}
- */
+// ── Botón "Abrir panel" ───────────────────────────────────────────────────────
+
 function buildPanelButton() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
