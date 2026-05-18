@@ -9,7 +9,6 @@ import {
   IconUser,
   IconArrowRight,
   IconBrandDiscord,
-  IconBrandGithub,
   IconShieldLock,
 } from "@tabler/icons-react";
 
@@ -365,50 +364,31 @@ function LoginForm() {
             <div className="flex-1 h-px" style={{ background: "#1e2028" }} />
           </div>
 
-          {/* Botones sociales — stack en mobile, grid en sm+ */}
-          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2.5 sm:gap-3">
-            <button
-              type="button"
-              onClick={handleDiscordLogin}
-              className="flex items-center justify-center gap-2.5 text-sm font-medium transition-all active:scale-[0.98]"
-              style={{
-                height: "clamp(44px, 5vw, 52px)",
-                borderRadius: 12,
-                background: "rgba(88,101,242,0.08)",
-                border: "1px solid rgba(88,101,242,0.25)",
-                color: "#8b9cf4",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(88,101,242,0.15)";
-                e.currentTarget.style.borderColor = "rgba(88,101,242,0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(88,101,242,0.08)";
-                e.currentTarget.style.borderColor = "rgba(88,101,242,0.25)";
-              }}
-            >
-              <IconBrandDiscord size={20} color="#5865F2" stroke={1.6} />
-              Continuar con Discord
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center gap-2.5 text-sm font-medium transition-colors"
-              style={{
-                height: "clamp(44px, 5vw, 52px)",
-                borderRadius: 12,
-                background: "#13151c",
-                border: "1px solid #1e2028",
-                color: "#aaa",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#181b23")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#13151c")}
-            >
-              <IconBrandGithub size={20} color="#ccc" stroke={1.6} />
-              GitHub
-            </button>
-          </div>
+          {/* Botón Discord — full width */}
+          <button
+            type="button"
+            onClick={handleDiscordLogin}
+            className="w-full flex items-center justify-center gap-2.5 text-sm font-medium transition-all active:scale-[0.98]"
+            style={{
+              height: "clamp(44px, 5vw, 52px)",
+              borderRadius: 12,
+              background: "rgba(88,101,242,0.08)",
+              border: "1px solid rgba(88,101,242,0.25)",
+              color: "#8b9cf4",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(88,101,242,0.15)";
+              e.currentTarget.style.borderColor = "rgba(88,101,242,0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(88,101,242,0.08)";
+              e.currentTarget.style.borderColor = "rgba(88,101,242,0.25)";
+            }}
+          >
+            <IconBrandDiscord size={20} color="#5865F2" stroke={1.6} />
+            Continuar con Discord
+          </button>
 
           {/* Badge inferior */}
           <div
